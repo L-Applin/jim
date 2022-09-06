@@ -1,4 +1,4 @@
-#Jim (working title)
+# Jim (working title)
 
 Programming langage project to have fun explorating different concept related to type system and functional programming.
 
