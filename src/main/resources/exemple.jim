@@ -1,0 +1,346 @@
+
+Size_t :: Type = Int ;
+
+sizes :: [Size_t] = [1, 2, 3, 4, 5, 6, 7, 8];
+
+// jai it and it_index?
+for sizes {
+  if (it % 2 == 0) {
+    println(it);
+    println(it_index);
+  }
+}
+
+// iterator names
+for size, i: sizes {
+  println(size + ": " + i);
+}
+
+for i: [0..10] {
+  println(i % 2 == 0);
+}
+
+Error :: Type = (String, Exception) ;
+Result Value :: Type = Result Value | Error ;
+
+ErrorStruct :: Type  = {
+  msg: String ;
+  ex: Exception ;
+}
+
+Maybe A :: Type = Just A
+             | Nothing
+             ;
+
+
+List A :: Type = Nil | Cons A (List A) ;
+
+Funs A B :: Type = List (A -> B) ;
+
+Num :: Class {
+  add :: (Num, Num) -> Num ;
+  sub :: (Num, Num) -> Num ;
+  mul :: (Num, Num) -> Num ;
+  div :: (Num, Num) -> Num ;
+}
+
+Functor F :: Class {
+  fmap :: (a -> b, F a) -> F b ;
+}
+
+Applicative F :: Class <F: Functor> {
+  pure :: a -> F a ;
+  lift :: (F (a -> b), F a) -> F b ;
+}
+
+Size_t :: Implementation Num {
+  add :: (Size_t, Size_t) -> Size_t = (a, b) -> return a + b ;
+  sub :: (Size_t, Size_t) -> Size_t = (a, b) -> return a - b ;
+  mul :: (Size_t, Size_t) -> Size_t = (a, b) -> return a * b ;
+  div :: (Size_t, Size_t) -> Size_t = (a, b) -> return a / b ;
+}
+
+x :: Size_t = 420;
+y :: Size_t = 69;
+res: Size_t = add(x, y);
+
+Mabybe A :: Implementation Functor A, Applicative A {
+
+  // Functor
+  fmap :: (A -> B, Maybe A) -> Maybe B =
+  (f, m) -> {
+    return case m {
+      Just a : Just(f(a)) ;
+      Nothing : Nothing() ;
+    }
+  }
+
+  // Applicative
+  pure :: A -> Maybe A = Just ;
+
+  lift :: (Maybe (A -> B), Maybe A) -> Maybe B =
+  (mf, m) -> {
+    case mf {
+      Just f: fmap(f, m);
+      Nothing: Nothing();
+    }
+  }
+}
+
+
+// Functor needs a kind * -> *
+List A :: Implementation Functor A {
+  fmap :: (A -> B, List A) -> List B  = (f, as) -> {
+    lb: List B = List()
+    for as {
+      lb.add(f(it))
+    }
+    return lb
+  }
+}
+
+// kind_of(List) => A -> Type
+
+ParserT A :: Type = String -> (Maybe A, String)
+
+Parser P :: Class {
+  parse :: this -> P ;
+}
+
+TypeDeclParser :: Type {
+  lexer: Lexer LexerToken ;
+  typeParse: Parser AstType ;
+}
+
+TypeDeclParser :: Implementation Parser TypeDecl {
+  parse :: this -> TypeDecl = () -> {
+    for this.lexer {
+      case it {
+        SYM: Sym(...) ;
+        OPEN_CURLY: Struct(...) ;
+      }
+    }
+  }
+}
+
+MyType A B :: Type = (A, B, A -> B) ;
+MyTypeStruct A B :: Type {
+  a: A ;
+  b: B ;
+  f: A -> B ;
+}
+
+
+main :: [String] -> Int = args -> {
+  something := ("Hello", 12, str -> str.len);                     // infered as (String, Int, String -> Int)
+  something: MyType String Int = ("Hello", 12, str -> str.len);   // MyType String Int
+  something := MyTypeStruct(a="Hello", b=12, f=str -> str.len);   // MyTypeStruct String Int
+  sum = 12 + max(something.b, 2 + 3)
+  return 1;
+}
+
+
+// using `this` as the first arguments of class function can simulate OOP method call
+Stack A :: Class {
+  push :: (this, A) -> Bool ;
+  pop  :: (this) -> Maybe A ;
+}
+
+My_Stack A :: Type {
+  elems: [A];
+  ptr: Int;
+}
+
+My_Stack A :: Implementation Stack A {
+  push :: (this, A) -> Bool = (this, a) -> {
+    elems[this.ptr++] = a;
+    return true;
+  }
+
+  pop :: (this) -> Maybe A = this -> {
+    elem := this.elems.isEmpty() ?
+        ? Nothing()
+        : Just(elems[this.ptr])
+      ptr--;
+      return elems;
+  }
+}
+
+stack := My_Stack([], 0) ;
+
+for [0..10] stack.push(it);
+println(stack.pop()) // syntactic sugar for println(pop(stack))
+// >>> 9
+
+push(stack, 42)
+println(pop(stack)) // so this also works,
+// >>> 42
+
+// can be done without a Type Class:
+My_Queue A :: Type {
+  elems: [A] = [] ;
+  ptr: Int = 0 ;
+
+  push :: (this, A) -> Bool =
+  (this, a) -> {
+    elems[this.ptr++] = a;
+    return true ;
+  }
+
+  dequeue :: (this) -> A =
+  this -> {
+    return this.elems[ptr--];
+  }
+}
+
+queue: My_Queue Int = My_Queue();
+queue.push(1);
+queue.push(2);
+println(queue.dequeu()); // >>> 1
+queue.push(3);
+println(queue.dequeu()); // >>> 2
+
+
+
+
+
+// ----------------------------------------------------------------------------------------------
+// propositions, none of that is certain...
+// everything below is experimentations
+
+
+// Types as parameters
+type_as_param :: $T -> String = t -> type_of(t) ; // $T means it accept a Type T, not a value of type T
+type_as_param :: $T -> String = t -> $t ;         // possibly? $t could be a shorthand syntax for type_of(t) ...
+
+// another possible syntax:
+type_as_param :: Type T -> String = t -> type_of(t) ;
+
+println(type_as_param(Int)) ; // ok, prints 'Type' beacause type_of(Int) is 'Type'
+type_as_param(42) ; // Error, 42 is not a type
+
+// Constructor for Class types
+Constructor Stack :: $T -> Stack T = _ -> My_Stack([], 0);
+// could be done just with a regular function
+make_stack  :: $T -> Stack T = _ -> My_Stack([], 0);
+// or
+Stack :: $T -> Stack T = _ -> My_Stack([], 0)
+
+// all equivalent?
+stack  := Stack(Int);                // inferred as Stack Int, not My_Stack Int (encapsulation)
+stack3 := Stack($0)                  // $0 would evalute to Int, as
+stack2 := make_stack(type_of(0));    //
+
+// would allows to reuse the identifier `Stack` as a constructor
+
+// todo
+// code block ?
+block :: Code = {
+  x := 42 ;
+  y := 69 ;
+  println(x + y);
+}
+
+run(block)
+// >>> 111
+
+outer: "This is from outside the code block") ;
+
+closure :: Code = {
+  println("Code blocks would have Closures") ;
+  println(outer) ;
+  run(block) ;
+}
+
+run(closure) ;
+// >>> Code blocks would have Closures
+// >>> This is from outside the code block
+// >>> 111
+
+// can be used as any other type
+SomeBlock T :: Type {
+  x: T ;
+  code: Code T ;
+}
+
+// inline Code block
+a: SomeBlock Int = SomeBlock(42, {
+  y := 68 ;
+  y++ // return from the block is the last expression value ?
+})
+
+println(a.x + run(a.code))
+// >>> 111
+
+// todo Macros?
+// Rust macro are very interresting...
+// assertEq!(TypeParser("A -> Either A B").parse(), fun!(A, gen!(Either A B)));
+
+fun! :: Macro {
+  $(...) -> {
+    ...
+  }
+}
+
+
+// Java interop?
+// imports, method calls.......
+@import static java.utils.Collections;
+@import java.utils.List as JList; // todo
+// Automatic implementations like Haskell `deriving (...)` or Rust `#[derives(...)]
+
+// manually:
+Eq :: Class {
+  eq :: (Eq, Eq) -> Bool ;
+}
+
+Some :: Type {
+  x: Int;
+  y: Str;
+}
+
+some1 := Some(42, "69") ;
+some2 := Some(42, "69") ;
+println(some1 == some2) ; // error! Type Some does not implements `Eq`
+
+
+// manuall implementation
+Some :: Implementation Eq {
+  eq :: (Some, Some) -> Bool = (s1, s2) -> {
+    return s1.x == s2.x && s1.y == s2.y ; // ok if Int and Str implements Eq already
+  }
+}
+
+// now we could do
+println(Some(42, "69") == Some(42, 69))
+// >>> true
+// eq() would be a special case where == can be used instead
+println(eq(Some(42, "69"), Some(42, 69))) // "desugar"
+
+// -----
+// now, with @derives(...)
+@derives(Eq)
+SomeOther :: Type {
+  x: Int ;
+  y: String ;
+}
+// need to check that all members derives or implements Eq themselves
+// what about function types??
+
+println(SomeOther(42, "60"), SomeOther(42, "69")) ; // ok because automatically derived Eq with each member
+// >>> true
+
+
+
+
+// pure function ?
+
+@pure
+add :: (Int, Int) -> Int = (i, j) -> i + j;
+
+// with @pure, you can only
+//   - call other pure functions
+//   - access variables passed to the function
+//   - read constant
+
+

@@ -1,0 +1,5 @@
+@import static jim.std
+
+main :: [String] -> Void = args -> {
+  println("Hello, World!");
+}
