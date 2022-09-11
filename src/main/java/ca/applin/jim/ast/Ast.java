@@ -1,8 +1,19 @@
-package ca.applin.jim.expr;
+package ca.applin.jim.ast;
 
+import static ca.applin.jib.utils.Maybe.just;
+import static ca.applin.jib.utils.Maybe.nothing;
+
+import ca.applin.jib.utils.Just;
+import ca.applin.jib.utils.Maybe;
+import ca.applin.jim.ast.AstVisitor.Visited;
 import java.util.Objects;
 
-public interface Ast {
+public interface Ast extends AstVisitor.Visited {
+
+    @Override
+    default void visit(AstVisitor astVisitor) {
+        astVisitor.visit(this);
+    }
 
     record Atom(String value, int hash) {
         public Atom(String value) {
@@ -28,7 +39,7 @@ public interface Ast {
         return this;
     }
 
-    // linked list
+    // linked list node
     class CodeBlock implements Ast {
         public Ast elem;
         public CodeBlock next;
@@ -56,6 +67,27 @@ public interface Ast {
                     ? "Block[elem=%s]".formatted(elem.toString())
                     : "Block[elem=%s, next=%s]".formatted(elem.toString(), next.toString());
         }
+
+        @Override
+        public void visit(AstVisitor astVisitor) {
+            astVisitor.visit(this);
+        }
+    }
+
+    static Maybe<CodeBlock> append(Maybe<CodeBlock> mBlock, Maybe<Ast> mNext) {
+        if (mBlock.isNothing()) {
+            if (mNext instanceof Just<Ast> jNext) {
+                return just(new CodeBlock(jNext.elem()));
+            }
+            return nothing();
+        }
+        if (mNext.isNothing()) {
+            return mBlock;
+        }
+        CodeBlock cb = ((Just<CodeBlock>) mBlock).elem();
+        Ast next = ((Just<Ast>) mNext).elem();
+        cb.append(next);
+        return mBlock;
     }
 
 }

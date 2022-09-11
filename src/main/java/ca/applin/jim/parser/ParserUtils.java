@@ -5,8 +5,10 @@ import static ca.applin.jib.utils.Utils.__FULL_METHOD_NAME__;
 import ca.applin.jib.utils.Just;
 import ca.applin.jib.utils.Maybe;
 import ca.applin.jim.lexer.LexerToken;
+import ca.applin.jim.lexer.LexerToken.Location;
 import ca.applin.jim.lexer.LexerToken.TokenType;
 import java.util.List;
+import java.util.function.Supplier;
 
 public class ParserUtils {
 
@@ -39,10 +41,16 @@ public class ParserUtils {
         throw new ParserException(msg);
     }
 
-    private static class ParserException extends RuntimeException {
-
+    public static class ParserException extends RuntimeException {
+        public final LexerToken lexerToken;
         public ParserException(String message) {
             super(message);
+            this.lexerToken = null;
+        }
+
+        public ParserException(String msg, LexerToken lexerToken) {
+            super(msg + ": " + lexerToken);
+            this.lexerToken = lexerToken;
         }
     }
 
@@ -96,5 +104,19 @@ public class ParserUtils {
         public void error(String msg, Object... fmt) {
             System.err.printf((msg) + "%n", fmt);
         }
+    }
+
+    public static class EndOfFileException extends RuntimeException {
+        public EndOfFileException(Location location) {
+            super("unexpected end of file reached " + location.toString());
+        }
+    }
+
+    public static Supplier<EndOfFileException> endOfFile(Location location) {
+        return () -> new EndOfFileException(location);
+    }
+
+    public static Supplier<EndOfFileException> endOfFile(LexerToken location) {
+        return () -> new EndOfFileException(location.location());
     }
 }

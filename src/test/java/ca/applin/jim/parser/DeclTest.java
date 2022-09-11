@@ -8,12 +8,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 import ca.applin.jib.utils.Maybe;
-import ca.applin.jim.expr.Decl;
-import ca.applin.jim.expr.Decl.TypeDecl;
-import ca.applin.jim.expr.Decl.VarDecl;
-import ca.applin.jim.expr.Type.StructElem;
-import ca.applin.jim.expr.Type.StructType;
-import ca.applin.jim.expr.Type.SumType;
+import ca.applin.jim.ast.Decl;
+import ca.applin.jim.ast.Decl.TypeDecl;
+import ca.applin.jim.ast.Decl.VarDecl;
+import ca.applin.jim.ast.Type.StructElem;
+import ca.applin.jim.ast.Type.StructType;
+import ca.applin.jim.ast.Type.SumType;
 import ca.applin.jim.lexer.Lexer;
 import ca.applin.jim.lexer.LexerToken;
 import ca.applin.jim.lexer.LexerToken.Location;

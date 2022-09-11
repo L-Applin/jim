@@ -26,6 +26,11 @@ public record LexerToken(TokenType type, String str, Location location) {
         public String toString() {
             return "%s @ (%d,%d)".formatted(filename(), line(), col());
         }
+
+        @Override
+        public boolean equals(Object obj) {
+            return (obj instanceof Location);
+        }
     }
 
     public String debugStr() {

@@ -2,17 +2,12 @@ package ca.applin.jim.examples;
 
 import static java.util.Collections.singletonList;
 
-import java.io.File;
 import java.io.StringWriter;
 
 import java.lang.reflect.Method;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.List;
-import javax.tools.Diagnostic;
 import javax.tools.DiagnosticCollector;
-import javax.tools.DiagnosticListener;
 import javax.tools.JavaCompiler;
 import javax.tools.JavaCompiler.CompilationTask;
 import javax.tools.JavaFileObject;
@@ -20,20 +15,19 @@ import javax.tools.ToolProvider;
 import java.net.URI;
 import javax.tools.SimpleJavaFileObject;
 
-public class JimCompiler {
+public class RuntimeJavaStringCompiler {
 
     static JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
 
     public static void main(String[] args) throws Exception {
         JavaSourceClass jsc = new JavaSourceClass(
-                 "ca.applin.jim","TestClass", true,
+                 "ca.applin.jim",
+                List.of(),
+                "ByteCodeTest",
+                true,
                 """
-                   int member = 42;
-                   public static void test(String arg) {
-                     System.out.println("Hello, World: " + arg); 
-                   }
-                   public int inst(int i) {
-                     return this.member + i; 
+                   public int add(int i, int j) {
+                     return i + j;
                    }
                     """
         );
@@ -57,12 +51,9 @@ public class JimCompiler {
             throw new RuntimeException("Compilation failed :" + output);
         }
 
-        Class.forName(jsc.fullName()).getDeclaredMethod("test", String.class)
-                .invoke(null, "from another workd");
-
         Object target = Class.forName(jsc.fullName()).getConstructor().newInstance();
-        Method method = Class.forName(jsc.fullName()).getMethod("inst", int.class);
-        Integer i = (Integer) method.invoke(target, 69);
+        Method method = Class.forName(jsc.fullName()).getMethod("add", int.class, int.class);
+        Integer i = (Integer) method.invoke(target, 69, 42);
         System.out.println(i);
 
     }
@@ -86,6 +77,7 @@ public class JimCompiler {
 
     record JavaSourceClass(
             String packageName,
+            List<String> imports,
             String className,
             boolean isPublic,
             String code)  {

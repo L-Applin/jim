@@ -1,14 +1,13 @@
 package ca.applin.jim.parser;
 
 import static ca.applin.jib.utils.Maybe.just;
-import static ca.applin.jim.parser.JimParser.append;
 import static ca.applin.jim.parser.TestUtils.litteral;
 import static org.junit.jupiter.api.Assertions.*;
 
 import ca.applin.jib.utils.Just;
 import ca.applin.jib.utils.Maybe;
-import ca.applin.jim.expr.Ast;
-import ca.applin.jim.expr.Ast.CodeBlock;
+import ca.applin.jim.ast.Ast;
+import ca.applin.jim.ast.Ast.CodeBlock;
 import ca.applin.jim.lexer.Lexer;
 import org.junit.jupiter.api.Test;
 
@@ -36,7 +35,13 @@ class JimParserTest {
          main :: [String] -> Void = args -> {
             index  :: Int = my_fun(42);
             index2 :: Int = my_fun(69);
-            println(index + index2);
+            for [0, 1, 2, 3, 4, 5] {
+              println(it + index + index2);
+            }
+            my_array: [Int] = [10, 20, 30, 40, 50];
+            for my_array {
+                println(it);
+            }
          }
          """;
         System.out.println(toParse);
@@ -49,10 +54,10 @@ class JimParserTest {
     @Test
     void testAppend() {
         Maybe<CodeBlock> cb1 = just(new CodeBlock(litteral(1), null));
-        append(cb1, just(litteral(2)));
-        append(cb1, just(litteral(3)));
-        append(cb1, just(litteral(4)));
-        append(cb1, just(litteral(5)));
+        Ast.append(cb1, just(litteral(2)));
+        Ast.append(cb1, just(litteral(3)));
+        Ast.append(cb1, just(litteral(4)));
+        Ast.append(cb1, just(litteral(5)));
         System.out.println(cb1);
     }
 }

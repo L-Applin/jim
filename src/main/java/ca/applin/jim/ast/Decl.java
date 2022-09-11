@@ -1,4 +1,4 @@
-package ca.applin.jim.expr;
+package ca.applin.jim.ast;
 
 import ca.applin.jib.utils.Maybe;
 import ca.applin.jim.lexer.LexerToken;
@@ -43,6 +43,11 @@ public interface Decl extends Ast {
             result = 31 * result + (type != null ? type.hashCode() : 0);
             return result;
         }
+
+        @Override
+        public void visit(AstVisitor astVisitor) {
+            astVisitor.visit(this);
+        }
     }
 
     record VarDecl(
@@ -79,15 +84,41 @@ public interface Decl extends Ast {
             result = 31 * result + (expr != null ? expr.hashCode() : 0);
             return result;
         }
+
+        @Override
+        public void visit(AstVisitor astVisitor) {
+            astVisitor.visit(this);
+        }
+    }
+
+    record VarAssign(
+        Location location,
+        Atom name,
+        Expr expr
+    ) implements Decl{
+        public boolean isConst() {
+            return false;
+        }
+
+        @Override
+        public void visit(AstVisitor astVisitor) {
+            astVisitor.visit(this);
+        }
     }
 
     record FunctionDecl(
         Location location,
         Atom name,
+        Maybe<Type> type,
         List<Atom> args,
         Ast body
     ) implements Decl {
         public boolean isConst() { return true; }
+
+        @Override
+        public void visit(AstVisitor astVisitor) {
+            astVisitor.visit(this);
+        }
     }
 
 }

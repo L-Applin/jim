@@ -9,8 +9,16 @@ import ca.applin.jib.utils.Peekable;
 import ca.applin.jib.utils.Utils;
 import ca.applin.jim.lexer.LexerToken.Location;
 import ca.applin.jim.lexer.LexerToken.TokenType;
+import ca.applin.jim.parser.ParserUtils;
+import ca.applin.jim.parser.ParserUtils.ParserException;
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.Scanner;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
@@ -20,7 +28,7 @@ public class Lexer<TOKEN extends LexerToken> implements Iterable<TOKEN>, Peekabl
     private final Peekable<Character> chars;
     private final SpecialChars specialChars;
     private final LexerTokenFactory<TOKEN> tokenFactory;
-    private final String filename;
+    public final String filename;
 
     private final Peekable<TOKEN> iter;
 
@@ -35,7 +43,7 @@ public class Lexer<TOKEN extends LexerToken> implements Iterable<TOKEN>, Peekabl
         this.chars = chars;
         this.filename = filename;
         this.specialChars = specialChars;
-        this.line = this.col = 0;
+        this.line = 0; this.col = 0;
         this.tokenFactory = tokenFactory;
         this.iter = iterator();
     }
@@ -70,11 +78,6 @@ public class Lexer<TOKEN extends LexerToken> implements Iterable<TOKEN>, Peekabl
         return iter.next();
     }
 
-    public static Lexer<LexerToken> fromString(String str) {
-        Iterator<Character> strIter = Utils.characters(str).iterator();
-        return new Lexer<>(Peekable.fromIterator(strIter), LexerTokenFactory.DEFAULT,
-                DEFAULT_SPECIAL_CHARS, "<from string>");
-    }
 
     @Override
     public Peekable<TOKEN> iterator() {
@@ -246,11 +249,8 @@ public class Lexer<TOKEN extends LexerToken> implements Iterable<TOKEN>, Peekabl
                     col++;
                     currentSymLen++;
                 }
-                // todo right now, we return EOF only when a comment is the last thing
-                if (!chars.hasNext()) {
-                    return tokenFactory.makeToken(EOF, "<EOF>", new Location(filename, line, col));
-                }
-                throw new NoSuchElementException();
+                // todo handle EOF correctly
+                return tokenFactory.makeToken(EOF, "<EOF>", new Location(filename, line, col));
             }
         });
     }
@@ -267,5 +267,48 @@ public class Lexer<TOKEN extends LexerToken> implements Iterable<TOKEN>, Peekabl
             return onNoToken.get();
         }
         return token.elem();
+    }
+
+    public static Lexer<LexerToken> fromString(String str) {
+        Iterator<Character> strIter = Utils.characters(str).iterator();
+        return new Lexer<>(
+                Peekable.fromIterator(strIter),
+                LexerTokenFactory.DEFAULT,
+                DEFAULT_SPECIAL_CHARS,
+                "<from string>");
+    }
+
+    public static Lexer<LexerToken> fromFile(String filepath) {
+        try {
+            // default charset of the JVM is UTF-8, so that is what is supportedj
+            BufferedReader buff = new BufferedReader(new FileReader(filepath, Charset.defaultCharset()));
+            Lexer<LexerToken> lexer = new Lexer<>(
+                Peekable.fromIterator(new Iterator<>() {
+                    @Override
+                    public boolean hasNext() {
+                        try {
+                            return buff.ready();
+                        } catch (IOException e) {
+                            return false;
+                        }
+                    }
+                    @Override
+                    public Character next() {
+                        try {
+                            return (char) buff.read();
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                }),
+                LexerTokenFactory.DEFAULT,
+                DEFAULT_SPECIAL_CHARS,
+                filepath
+            );
+            lexer.line = 1;
+            return lexer;
+        } catch (IOException e) {
+            throw new ParserException("Cannot open file " + filepath);
+        }
     }
 }

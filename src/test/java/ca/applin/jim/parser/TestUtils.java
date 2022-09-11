@@ -1,24 +1,23 @@
 package ca.applin.jim.parser;
 
-import ca.applin.jim.expr.Ast;
-import ca.applin.jim.expr.Ast.Atom;
-import ca.applin.jim.expr.Expr;
-import ca.applin.jim.expr.Expr.ArrayLitteral;
-import ca.applin.jim.expr.Expr.Binop;
-import ca.applin.jim.expr.Expr.FloatLitteral;
-import ca.applin.jim.expr.Expr.FunctionCall;
-import ca.applin.jim.expr.Expr.IntegerLitteral;
-import ca.applin.jim.expr.Expr.Litteral;
-import ca.applin.jim.expr.Expr.PExpr;
-import ca.applin.jim.expr.Expr.Ref;
-import ca.applin.jim.expr.Expr.StringLitteral;
-import ca.applin.jim.expr.Operator;
-import ca.applin.jim.expr.Type;
-import ca.applin.jim.expr.Type.ArrayType;
-import ca.applin.jim.expr.Type.FunctionType;
-import ca.applin.jim.expr.Type.GenericType;
-import ca.applin.jim.expr.Type.SimpleType;
-import ca.applin.jim.expr.Type.TupleType;
+import ca.applin.jim.ast.Ast.Atom;
+import ca.applin.jim.ast.Expr;
+import ca.applin.jim.ast.Expr.ArrayLitteral;
+import ca.applin.jim.ast.Expr.Binop;
+import ca.applin.jim.ast.Expr.FloatLitteral;
+import ca.applin.jim.ast.Expr.FunctionCall;
+import ca.applin.jim.ast.Expr.IntegerLitteral;
+import ca.applin.jim.ast.Expr.PExpr;
+import ca.applin.jim.ast.Expr.Ref;
+import ca.applin.jim.ast.Expr.StringLitteral;
+import ca.applin.jim.ast.Operator;
+import ca.applin.jim.ast.Type;
+import ca.applin.jim.ast.Type.ArrayType;
+import ca.applin.jim.ast.Type.FunctionType;
+import ca.applin.jim.ast.Type.GenericType;
+import ca.applin.jim.ast.Type.SimpleType;
+import ca.applin.jim.ast.Type.TupleType;
+import ca.applin.jim.lexer.LexerToken.Location;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
@@ -27,6 +26,7 @@ public class TestUtils {
 
     public static SimpleType STRING_TYPE = new SimpleType("String");
     public static SimpleType INT_TYPE = new SimpleType("Int");
+    public static Location TEST_LOCATION = new Location("<from string>", 0, 0);
 
     static Type maybe(String s) {
         return generic("Maybe", type(s));
@@ -81,7 +81,7 @@ public class TestUtils {
     }
 
     static FunctionCall fcall(String name, Expr... args) {
-        return new FunctionCall(new Atom(name), Arrays.asList(args));
+        return new FunctionCall(TEST_LOCATION, new Atom(name), Arrays.asList(args));
     }
 
     static Ref var(String name) {

@@ -2,7 +2,7 @@ package ca.applin.jim.parser;
 
 import ca.applin.jib.utils.Just;
 import ca.applin.jib.utils.Maybe;
-import ca.applin.jim.expr.Type;
+import ca.applin.jim.ast.Type;
 import ca.applin.jim.lexer.Lexer;
 import ca.applin.jim.lexer.LexerToken;
 import ca.applin.jim.lexer.LexerToken.TokenType;
@@ -13,9 +13,8 @@ import java.util.NoSuchElementException;
 
 import static ca.applin.jib.utils.Maybe.just;
 import static ca.applin.jib.utils.Maybe.nothing;
-import static ca.applin.jib.utils.Maybe.to;
 import static ca.applin.jib.utils.Utils.todo;
-import static ca.applin.jim.expr.Type.*;
+import static ca.applin.jim.ast.Type.*;
 import static ca.applin.jim.lexer.LexerToken.TokenType.ARROW;
 import static ca.applin.jim.lexer.LexerToken.TokenType.CLOSE_PAREN;
 import static ca.applin.jim.lexer.LexerToken.TokenType.CLOSE_SQ;

@@ -1,4 +1,4 @@
-package ca.applin.jim.expr;
+package ca.applin.jim.ast;
 
 
 import ca.applin.jim.lexer.LexerToken;

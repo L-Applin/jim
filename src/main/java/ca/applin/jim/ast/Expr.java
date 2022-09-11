@@ -1,7 +1,8 @@
-package ca.applin.jim.expr;
+package ca.applin.jim.ast;
 
-import ca.applin.jim.expr.Type.ArrayType;
-import ca.applin.jim.expr.Type.FunctionType;
+import ca.applin.jim.ast.Type.ArrayType;
+import ca.applin.jim.ast.Type.FunctionType;
+import ca.applin.jim.lexer.LexerToken.Location;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,6 +31,7 @@ public interface Expr extends Ast {
             return new IntegerLitteral(-value());
         }
         public Type type() { return Type.INTEGER; }
+        public void visit(AstVisitor astVisitor) { astVisitor.visit(this); }
     }
 
     record FloatLitteral(Double value) implements Litteral<Double> {
@@ -37,12 +39,14 @@ public interface Expr extends Ast {
             return new FloatLitteral(-value());
         }
         public Type type() { return Type.FLOAT; }
+        public void visit(AstVisitor astVisitor) { astVisitor.visit(this); }
     }
 
     record StringLitteral(String value) implements Litteral<String> {
         public Type type() {
             return Type.STRING;
         }
+        public void visit(AstVisitor astVisitor) { astVisitor.visit(this); }
     }
 
     ArrayLitteral EMPTY_ARRAY = new ArrayLitteral(new ArrayList<>(), Type.UNKNOWN);
@@ -50,6 +54,7 @@ public interface Expr extends Ast {
         public Type type() {
             return new ArrayType(baseType);
         }
+        public void visit(AstVisitor astVisitor) { astVisitor.visit(this); }
     }
 
     record Unop(Expr expr, Operator operator, Type type) implements Expr { }
@@ -63,11 +68,13 @@ public interface Expr extends Ast {
             return "Binop[%s, left=%s, right=%s]"
                     .formatted(op().toString(), left(), right());
         }
+        public void visit(AstVisitor astVisitor) { astVisitor.visit(this); }
     }
 
     record PExpr(Expr inner) implements Expr {
         public Type type() { return inner().type(); }
         public Expr unpack() { return inner(); }
+        public void visit(AstVisitor astVisitor) { astVisitor.visit(this); }
     }
 
     record Ref(Atom ref, Type type) implements Expr {
@@ -79,6 +86,7 @@ public interface Expr extends Ast {
         public String toString() {
             return "Ref['%s']".formatted(ref.value());
         }
+        public void visit(AstVisitor astVisitor) { astVisitor.visit(this); }
     }
 
     record DeRef(Expr left, Atom rigth, Type type) implements Expr {
@@ -90,16 +98,20 @@ public interface Expr extends Ast {
         public String toString() {
             return "DeRef[left=%s, rigth=%s".formatted(left().toString(), rigth().toString());
         }
+        public void visit(AstVisitor astVisitor) { astVisitor.visit(this); }
     }
 
-    record FunctionCall(Atom ref, List<Expr> args) implements Expr {
+    record FunctionCall(Location location, Atom ref, List<Expr> args) implements Expr {
         public Type type() {
             return new FunctionType(args().stream().map(Expr::type).toList(), Type.UNKNOWN);
         }
+        public void visit(AstVisitor astVisitor) { astVisitor.visit(this); }
     }
 
     record ReturnExpr(Expr expr) implements Expr {
         public Type type() { return expr.type(); }
+
+        public void visit(AstVisitor astVisitor) { astVisitor.visit(this); }
     }
 
 }

@@ -1,0 +1,3 @@
+main :: String -> Void = args -> {
+  print("Hello, World!");
+}

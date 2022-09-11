@@ -1,11 +1,10 @@
 package ca.applin.jim.parser;
 
 import static ca.applin.jib.utils.Maybe.just;
-import static ca.applin.jim.expr.Operator.DIV;
-import static ca.applin.jim.expr.Operator.MOD;
-import static ca.applin.jim.expr.Operator.PLUS;
-import static ca.applin.jim.expr.Operator.TIMES;
-import static ca.applin.jim.parser.TestUtils.INT_TYPE;
+import static ca.applin.jim.ast.Operator.DIV;
+import static ca.applin.jim.ast.Operator.MOD;
+import static ca.applin.jim.ast.Operator.PLUS;
+import static ca.applin.jim.ast.Operator.TIMES;
 import static ca.applin.jim.parser.TestUtils.array;
 import static ca.applin.jim.parser.TestUtils.binop;
 import static ca.applin.jim.parser.TestUtils.fcall;
@@ -15,19 +14,14 @@ import static ca.applin.jim.parser.TestUtils.var;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
-import ca.applin.jim.expr.Expr;
-import ca.applin.jim.expr.Expr.FloatLitteral;
-import ca.applin.jim.expr.Expr.IntegerLitteral;
-import ca.applin.jim.expr.Expr.Ref;
-import ca.applin.jim.expr.Expr.StringLitteral;
-import ca.applin.jim.expr.Expr.Unop;
-import ca.applin.jim.expr.Operator;
-import ca.applin.jim.expr.Type;
+import ca.applin.jim.ast.Expr;
+import ca.applin.jim.ast.Expr.IntegerLitteral;
+import ca.applin.jim.ast.Expr.StringLitteral;
+import ca.applin.jim.ast.Type;
 import ca.applin.jim.lexer.Lexer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -113,6 +107,7 @@ class ExprParserTest {
                     array(Type.STRING, Stream.of("one", "two", "three").map(s -> (Expr) new StringLitteral(s)).toList())),
                 arguments("[\"\", \"\", \"\"]",
                         array(Type.STRING, Stream.of("", "", "").map(s -> (Expr) new StringLitteral(s)).toList()))
+
             );
         }
     }

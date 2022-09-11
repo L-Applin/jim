@@ -219,8 +219,8 @@ type_as_param :: Type T -> String = t -> type_of(t) ;
 println(type_as_param(Int)) ; // ok, prints 'Type' beacause type_of(Int) is 'Type'
 type_as_param(42) ; // Error, 42 is not a type
 
-// Constructor for Class types
-Constructor Stack :: $T -> Stack T = _ -> My_Stack([], 0);
+// Constructor for Class types, used for encapsluation?
+Stack :: Constructor $T -> Stack T = _ -> My_Stack([], 0);
 // could be done just with a regular function
 make_stack  :: $T -> Stack T = _ -> My_Stack([], 0);
 // or

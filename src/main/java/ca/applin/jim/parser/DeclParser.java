@@ -4,11 +4,11 @@ import static ca.applin.jib.utils.Maybe.just;
 import static ca.applin.jib.utils.Maybe.nothing;
 import static ca.applin.jib.utils.Utils.__METHOD__;
 import static ca.applin.jib.utils.Utils.todo;
-import static ca.applin.jim.expr.Type.GenericType;
-import static ca.applin.jim.expr.Type.SimpleType;
-import static ca.applin.jim.expr.Type.StructElem;
-import static ca.applin.jim.expr.Type.StructType;
-import static ca.applin.jim.expr.Type.SumType;
+import static ca.applin.jim.ast.Type.GenericType;
+import static ca.applin.jim.ast.Type.SimpleType;
+import static ca.applin.jim.ast.Type.StructElem;
+import static ca.applin.jim.ast.Type.StructType;
+import static ca.applin.jim.ast.Type.SumType;
 import static ca.applin.jim.lexer.LexerToken.TokenType.ARROW;
 import static ca.applin.jim.lexer.LexerToken.TokenType.CLOSE_CURLY;
 import static ca.applin.jim.lexer.LexerToken.TokenType.CLOSE_PAREN;
@@ -21,21 +21,30 @@ import static ca.applin.jim.lexer.LexerToken.TokenType.OPEN_PAREN;
 import static ca.applin.jim.lexer.LexerToken.TokenType.PIPE;
 import static ca.applin.jim.lexer.LexerToken.TokenType.SEMICOLON;
 import static ca.applin.jim.lexer.LexerToken.TokenType.SYM;
+import static ca.applin.jim.parser.Keywords.CASE;
+import static ca.applin.jim.parser.Keywords.FOR;
+import static ca.applin.jim.parser.Keywords.IF;
+import static ca.applin.jim.parser.Keywords.WHILE;
 import static ca.applin.jim.parser.ParserUtils.Logger.log;
+import static ca.applin.jim.parser.ParserUtils.endOfFile;
+import static ca.applin.jim.parser.ParserUtils.expect;
 
 import ca.applin.jib.utils.Just;
 import ca.applin.jib.utils.Maybe;
-import ca.applin.jim.expr.Ast;
-import ca.applin.jim.expr.Ast.Atom;
-import ca.applin.jim.expr.Ast.CodeBlock;
-import ca.applin.jim.expr.Decl;
-import ca.applin.jim.expr.Decl.FunctionDecl;
-import ca.applin.jim.expr.Decl.TypeDecl;
-import ca.applin.jim.expr.Decl.VarDecl;
-import ca.applin.jim.expr.Expr;
-import ca.applin.jim.expr.Type;
+import ca.applin.jim.ast.Ast;
+import ca.applin.jim.ast.Ast.Atom;
+import ca.applin.jim.ast.Ast.CodeBlock;
+import ca.applin.jim.ast.Decl;
+import ca.applin.jim.ast.Decl.FunctionDecl;
+import ca.applin.jim.ast.Decl.TypeDecl;
+import ca.applin.jim.ast.Decl.VarAssign;
+import ca.applin.jim.ast.Decl.VarDecl;
+import ca.applin.jim.ast.Expr;
+import ca.applin.jim.ast.Stmt.ForStmt;
+import ca.applin.jim.ast.Type;
 import ca.applin.jim.lexer.Lexer;
 import ca.applin.jim.lexer.LexerToken;
+import ca.applin.jim.parser.ParserUtils.ParserException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -54,6 +63,7 @@ public class DeclParser implements Parser<Decl> {
         this.lexer = lexer;
         this.typeParser = typeParser;
         this.exprParser = exprParser;
+        this.exprParser.setDeclParser(this);
     }
 
     public DeclParser(Lexer<LexerToken> lexer) {
@@ -73,21 +83,21 @@ public class DeclParser implements Parser<Decl> {
         if (name == null) {
             name = lexer.next();
         }
-//        Maybe<LexerToken> next = lexer.maybeNext();
-        Maybe<LexerToken> next = lexer.peek();
-        if (!(next instanceof Just<LexerToken> jNext)) {
-            todo("report malformed delaration");
-            return nothing ();
-        }
-        final LexerToken afterName = jNext.elem();
+        LexerToken afterName = lexer.peek().orElseThrow(endOfFile(name.location()));
         return switch (afterName.type()) {
+            case EQ -> {
+                Ast ast = exprParser.parse()
+                        .orElseThrow(new ParserException("error while parsing expresion: " + name));
+                yield just(new VarAssign(name.location(), new Atom(name.str()), (Expr) ast));
+            }
+
             case SYM -> {
                 lexer.next();
                 List<String> genericVar = new ArrayList<>();
-                Maybe<LexerToken> curr = jNext;
-                while (!curr.test(tok -> COLON.equals(tok.type()) || DOUBLE_COLON.equals(tok.type()))) {
-                    genericVar.add(((Just<LexerToken>) curr).elem().str());
-                    curr = lexer.maybeNext();
+                LexerToken curr = afterName;
+                while (!(COLON.equals(curr.type()) || DOUBLE_COLON.equals(curr.type()))) {
+                    genericVar.add(curr.str());
+                    curr = lexer.maybeNext().orElseThrow(endOfFile(name.location()));
                 }
                 yield fromColon(name, lexer.current().type() == DOUBLE_COLON, genericVar);
             }
@@ -105,11 +115,7 @@ public class DeclParser implements Parser<Decl> {
     }
 
     public Maybe<Decl> fromColon(LexerToken declName, boolean isDoubleColon, List<String> genericsVar) {
-        Maybe<LexerToken> mKeyword = lexer.peek();
-        if (!(mKeyword instanceof Just<LexerToken> jKeyword)){
-            return todo("report malformed declaration. Current=" + lexer.current());
-        }
-        LexerToken afterColon = jKeyword.elem();
+        LexerToken afterColon = lexer.peek().orElseThrow(endOfFile(declName.location()));
         return switch (Keywords.fromString(afterColon.str())) {
 
             // todo type requirements (Applicative F :: Class <F: Functor> { ...
@@ -136,7 +142,8 @@ public class DeclParser implements Parser<Decl> {
             default -> {
                 if (afterColon.type() == EQ) {
                     // infered type variable
-                    // todo infered function types
+                    // todo infered function types:
+                    lexer.next();
                     yield parseVarDecl(declName, isDoubleColon, nothing());
                 }
                 Maybe<Type> mType = typeParser.parse();
@@ -148,7 +155,7 @@ public class DeclParser implements Parser<Decl> {
                 }
                 lexer.next(); // eat EQ
                 yield jType.elem().isFunctionType()
-                        ? parseFunctionDecl(declName)
+                        ? parseFunctionDecl(declName, jType.elem())
                         : parseVarDecl(declName, isDoubleColon, jType);
             }
         };
@@ -249,19 +256,15 @@ public class DeclParser implements Parser<Decl> {
 
     // must be after the EQ token
     public Maybe<Decl> parseVarDecl(LexerToken declName, boolean isConst, Maybe<Type> mType) {
-        Maybe<Expr> mExpr = exprParser.parse();
-        if ( !(mExpr instanceof Just<Expr> jExp)) {
-            todo("report malformed expr");
-            return nothing();
-        }
-        return just (new VarDecl(declName.location(), new Atom(declName.str()), isConst, mType, jExp.elem()));
+        Ast ast = exprParser.parse().orElseThrow(endOfFile(declName.location()));
+        return just (new VarDecl(declName.location(), new Atom(declName.str()), isConst, mType, (Expr) ast));
     }
 
     private Maybe<Decl> parseMarco() {
         return todo("parse Macros not yet implemented");
     }
 
-    private Maybe<Decl> parseFunctionDecl(LexerToken location) {
+    private Maybe<Decl> parseFunctionDecl(LexerToken location, Type type) {
         assert jimParser != null;
         assert lexer.current().type() == EQ : "Lexer not at EQ symbol beofre parsing function body";
 
@@ -298,13 +301,69 @@ public class DeclParser implements Parser<Decl> {
         if (!mCurly.test(tok -> tok.type() == OPEN_CURLY)) {
             todo("report missing open curly in function declaration: " + mCurly);
         }
-        Maybe<CodeBlock> codeBlock = jimParser.parseFunctionBody(location);
+        Maybe<CodeBlock> codeBlock = parseCodeBlock(location);
         final FunctionDecl funcDecl = new FunctionDecl(location.location(),
                 new Atom(location.str()),
+                just(type),
                 args,
                 codeBlock.orElseThrow(new RuntimeException("error while parsing function body")));
-        log.debug("parsed: %s", funcDecl);
         return just(funcDecl);
+    }
+
+
+    public Maybe<CodeBlock> parseCodeBlock(LexerToken location) {
+        // function body can only be Var Decl, procedure call or control flow
+        Maybe<CodeBlock> mCodeBlock = nothing();
+        while (lexer.peek().test(tok -> tok.type() != CLOSE_CURLY)) {
+            LexerToken peek = lexer.peek().orElseThrow(endOfFile(location));
+            switch (Keywords.fromString(peek.str())) {
+                case IF -> todo("parse IF statements");
+                case WHILE -> todo("parse WHILE statements");
+                case CASE -> todo("parse CASE statements");
+
+                case FOR -> {
+                    lexer.next(); // eat FOR keyword
+                    Ast iterator = exprParser.parse()
+                            .orElseThrow(new ParserUtils.ParserException("Malformed iterator expression"));
+                    Maybe<CodeBlock> mForCodeBlock;
+                    if (lexer.peek().orElseThrow(endOfFile(location)).type() == OPEN_CURLY) {
+                        lexer.next();
+                        mForCodeBlock = parseCodeBlock(lexer.current());
+                    } else {
+                        mForCodeBlock = exprParser.parse().map(CodeBlock::new);
+                    }
+                    CodeBlock forCodeBlocl = mForCodeBlock.orElseThrow(new ParserException("Error parsing FOR code block", peek));
+                    if (lexer.peek().orElseThrow(endOfFile(location)).type() == CLOSE_CURLY) {
+                        lexer.next();
+                    }
+                    ForStmt forStmt = new ForStmt(peek.location(), (Expr) iterator, forCodeBlocl);
+                    if (mCodeBlock.isNothing()) {
+                        mCodeBlock = just(new CodeBlock(forStmt));
+                    } else {
+                        mCodeBlock.ifPresent(c -> c.append(forStmt));
+                    }
+                }
+
+                case UNKNOWN, RETURN, THIS -> {
+                    Maybe<Ast> mAst = exprParser.parse();
+                    if (mCodeBlock.isNothing()) {
+                        if (mAst instanceof Just<Ast> jAst) {
+                            mCodeBlock = just (new CodeBlock(jAst.elem()));
+                        }
+                    } else {
+                        if (mAst instanceof Just<Ast> jAst) {
+                            mCodeBlock.ifPresent(c -> c.append(jAst.elem()));
+                        }
+                    }
+                }
+
+                // not allowed here
+                case TYPE, CLASS, IMPLEMENTATION, STATIC ->
+                    throw new ParserUtils.ParserException("[ERROR] expected any of " +
+                            List.of(IF, WHILE, CASE, FOR) + " but got " + peek);
+            }
+        }
+        return mCodeBlock;
     }
 
 }

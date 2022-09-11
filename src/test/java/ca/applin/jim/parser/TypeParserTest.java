@@ -3,7 +3,7 @@ package ca.applin.jim.parser;
 
 import ca.applin.jib.utils.Just;
 import ca.applin.jib.utils.Maybe;
-import ca.applin.jim.expr.Type;
+import ca.applin.jim.ast.Type;
 import ca.applin.jim.lexer.Lexer;
 import java.util.List;
 import java.util.stream.Stream;
