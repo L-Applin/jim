@@ -13,6 +13,7 @@ Haskell type system, Kotlin/Haskell syntax, Java performance, semantics and ecos
   - [ ] for
   - [ ] if
   - [ ] case
+
 ... and much more
 
 ## Examples
