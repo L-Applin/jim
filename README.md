@@ -10,10 +10,9 @@ Haskell type system, Kotlin/Haskell syntax, Java performance, semantics and ecos
 - [x] hello world
 - [ ] local variables
 - [ ] all control flow:
-      - [ ] for
-      - [ ] if
-      - [ ] case
-- [] 
+  - [ ] for
+  - [ ] if
+  - [ ] case
 ... and much more
 
 ## Examples
