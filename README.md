@@ -6,6 +6,27 @@ Haskell type system, Kotlin/Haskell syntax, Java performance, semantics and ecos
 
 **Everything subject to change.**
 
+## stages
+[x] hello world
+[] all control flow:
+[] for
+[] if
+[] case
+[]
+
+## Examples
+Working Helllo world:
+- run the test `src/test/java/ca/applin/jim/compiler/CompilerTest.java` which will try to compile `src/test/resources/Simple.jim`
+- It should have create `target/generated-test-sources/classes/jim/Simple.class`
+- you can run this class file simple by (from root):
+```console
+cd target/generated-test-sources/classes
+java jim.Simple
+```
+
+## requirements
+[ji](https://github.com/L-Applin/jib) is required. You can clone the jib repository and `mvn clean install` so that the lib is available to locally.
+
 ## Features
 Core support for functional types:
 
