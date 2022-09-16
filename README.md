@@ -1,11 +1,12 @@
 # Jim (working title)
 
-Programming langage project to have fun explorating different concept related to type system and functional programming.
+Programming langage project to have fun explorating different concept related to type system and functional programming. Compiled to JVM Bytecode.
 
 Haskell type system, Kotlin/Haskell syntax, Java performance, semantics and ecosystem
 
 **Everything subject to change.**
 
+## Features
 Core support for functional types:
 
 ```
