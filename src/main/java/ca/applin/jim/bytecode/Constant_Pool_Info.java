@@ -81,22 +81,21 @@ public class Constant_Pool_Info {
     public static Constant_Pool_Info string_info(short string_index) {
         final byte[] bytes = to_bytes_big(string_index);
         return new Constant_Pool_Info(new byte[] {
-                TAG_CLASS,
+                TAG_STRING,
                 bytes[0], bytes[1]
         });
     }
 
-
-    public static Constant_Pool_Info integer_info(int bytes) {
-        final byte[] int_bytes = to_bytes_big(bytes);
+    public static Constant_Pool_Info integer_info(int value) {
+        final byte[] int_bytes = to_bytes_big(value);
         return new Constant_Pool_Info(new byte[] {
                 TAG_INTEGER,
                 int_bytes[0], int_bytes[1], int_bytes[2], int_bytes[3]
         });
     }
 
-    public static Constant_Pool_Info float_info(int bytes) {
-        final byte[] fl_bytes = to_bytes_big(bytes);
+    public static Constant_Pool_Info float_info(float value) {
+        final byte[] fl_bytes = to_bytes_big(value);
         return new Constant_Pool_Info(new byte[] {
                 TAG_FLOAT,
                 fl_bytes[0], fl_bytes[1], fl_bytes[2], fl_bytes[3]
@@ -144,6 +143,7 @@ public class Constant_Pool_Info {
         return new Constant_Pool_Info(data);
     }
 
+    // does not check the "modified UTF-8" encoding ...
     public static Constant_Pool_Info utf8_info(String str) {
         return utf8_info(str.getBytes(StandardCharsets.UTF_8));
     }

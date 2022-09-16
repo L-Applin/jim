@@ -144,6 +144,15 @@ public class TypeParser implements Parser<Type> {
         }
         Maybe<LexerToken> peeked = lexer.peek();
         if (peeked.isNothing() || peeked.test(this::isEndOfSimpleType)) {
+            // checks Void
+            if ("Void".equals(current.str())) {
+                return just(VOID);
+            }
+            // check Primitives
+            Maybe<Type> maybePrimitive = Primitive.fromString(current.str());
+            if (maybePrimitive.isJust()) {
+                return maybePrimitive;
+            }
             return just (new SimpleType(current.str()));
         }
         List<Type> generics = new ArrayList<>();

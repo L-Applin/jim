@@ -10,10 +10,10 @@ import java.util.Objects;
 
 public interface Ast extends AstVisitor.Visited {
 
-    @Override
-    default void visit(AstVisitor astVisitor) {
-        astVisitor.visit(this);
-    }
+//    @Override
+//    default void visit(AstVisitor astVisitor) {
+//        astVisitor.visit(this);
+//    }
 
     record Atom(String value, int hash) {
         public Atom(String value) {

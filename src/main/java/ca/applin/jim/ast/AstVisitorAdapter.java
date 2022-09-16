@@ -22,11 +22,14 @@ import ca.applin.jim.ast.Stmt.IfStmt;
 import ca.applin.jim.ast.Stmt.ImportStmt;
 import ca.applin.jim.ast.Stmt.WhileStmt;
 import ca.applin.jim.ast.Type.ArrayType;
+import ca.applin.jim.ast.Type.FloatType;
 import ca.applin.jim.ast.Type.FunctionType;
 import ca.applin.jim.ast.Type.GenericType;
+import ca.applin.jim.ast.Type.IntegerType;
 import ca.applin.jim.ast.Type.PType;
 import ca.applin.jim.ast.Type.Primitive;
 import ca.applin.jim.ast.Type.SimpleType;
+import ca.applin.jim.ast.Type.StringType;
 import ca.applin.jim.ast.Type.StructElem;
 import ca.applin.jim.ast.Type.StructType;
 import ca.applin.jim.ast.Type.SumType;
@@ -41,7 +44,11 @@ public abstract class AstVisitorAdapter implements AstVisitor {
 
     @Override
     public void visit(CodeBlock codeBlock) {
-        // intentionally left blank
+        // default implementation for linked list
+        codeBlock.elem.visit(this);
+        if (codeBlock.next != null) {
+            codeBlock.next.visit(this);
+        }
     }
 
     @Override
@@ -96,7 +103,11 @@ public abstract class AstVisitorAdapter implements AstVisitor {
 
     @Override
     public void visit(PExpr pExpr) {
-        // intentionally left blank
+        // default implementaion
+        final Expr inner = pExpr.inner();
+        if (inner != null) {
+            inner.visit(this);
+        }
     }
 
     @Override
@@ -192,5 +203,20 @@ public abstract class AstVisitorAdapter implements AstVisitor {
     @Override
     public void visit(Print print) {
         // intentionally left blank
+    }
+
+    @Override
+    public void visit(StringType stringType) {
+
+    }
+
+    @Override
+    public void visit(IntegerType integerType) {
+
+    }
+
+    @Override
+    public void visit(FloatType floatType) {
+
     }
 }

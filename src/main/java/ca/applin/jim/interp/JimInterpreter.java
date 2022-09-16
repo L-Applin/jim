@@ -23,11 +23,14 @@ import ca.applin.jim.ast.Stmt.IfStmt;
 import ca.applin.jim.ast.Stmt.ImportStmt;
 import ca.applin.jim.ast.Stmt.WhileStmt;
 import ca.applin.jim.ast.Type.ArrayType;
+import ca.applin.jim.ast.Type.FloatType;
 import ca.applin.jim.ast.Type.FunctionType;
 import ca.applin.jim.ast.Type.GenericType;
+import ca.applin.jim.ast.Type.IntegerType;
 import ca.applin.jim.ast.Type.PType;
 import ca.applin.jim.ast.Type.Primitive;
 import ca.applin.jim.ast.Type.SimpleType;
+import ca.applin.jim.ast.Type.StringType;
 import ca.applin.jim.ast.Type.StructElem;
 import ca.applin.jim.ast.Type.StructType;
 import ca.applin.jim.ast.Type.SumType;
@@ -244,8 +247,25 @@ public class JimInterpreter {
         @Override
         public void visit(Print print) {
             System.out.println("visit PRINT intrinsic: " + print.toString());
-            print.arg().visit(this);
+            print.arg().ifPresent(arg -> arg.visit(this));
+        }
+
+        @Override
+        public void visit(StringType stringType) {
+            System.out.println("visit STRING PRIMITIVE TYPE");
+        }
+
+        @Override
+        public void visit(IntegerType integerType) {
+            System.out.println("visit INT PRIMITIVE TYPE");
+        }
+
+        @Override
+        public void visit(FloatType floatType) {
+            System.out.println("visit FLOAT PRIMITIVE TYPE");
         }
     }
+
+
 
 }

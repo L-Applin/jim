@@ -24,6 +24,4 @@ public class Code_Attribute extends Attribute_Info {
         super(attribute_name_index, attribute_length, info);
     }
 
-
-
 }

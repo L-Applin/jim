@@ -1,6 +1,18 @@
 package ca.applin.jim.bytecode;
 
+import static ca.applin.jib.utils.Utils.todo;
+
 public class ByteUtils {
+
+    // big endian
+    public static byte[] to_bytes_big(double f) {
+       return todo();
+    }
+
+    // big endian
+    public static byte[] to_bytes_big(float f) {
+       return todo();
+    }
 
     // big endian
     public static byte[] to_bytes_big(short s) {

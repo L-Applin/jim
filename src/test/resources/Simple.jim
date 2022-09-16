@@ -1,0 +1,4 @@
+main :: [String] -> Void = args -> {
+  print("Hello, ");
+  print("Sailor!");
+}

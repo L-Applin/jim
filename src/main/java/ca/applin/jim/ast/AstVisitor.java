@@ -6,11 +6,14 @@ import static ca.applin.jim.ast.Expr.*;
 import static ca.applin.jim.ast.Stmt.*;
 
 import ca.applin.jim.ast.Type.ArrayType;
+import ca.applin.jim.ast.Type.FloatType;
 import ca.applin.jim.ast.Type.FunctionType;
 import ca.applin.jim.ast.Type.GenericType;
+import ca.applin.jim.ast.Type.IntegerType;
 import ca.applin.jim.ast.Type.PType;
 import ca.applin.jim.ast.Type.Primitive;
 import ca.applin.jim.ast.Type.SimpleType;
+import ca.applin.jim.ast.Type.StringType;
 import ca.applin.jim.ast.Type.StructElem;
 import ca.applin.jim.ast.Type.StructType;
 import ca.applin.jim.ast.Type.SumType;
@@ -50,6 +53,9 @@ public interface AstVisitor {
 
     void visit(SimpleType simpleType);
     void visit(Primitive primitive);
+    void visit(StringType stringType);
+    void visit(IntegerType integerType);
+    void visit(FloatType floatType);
     void visit(GenericType genericType);
     void visit(SumType sumType);
     void visit(StructType structType);

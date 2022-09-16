@@ -57,7 +57,9 @@ public interface Expr extends Ast {
         public void visit(AstVisitor astVisitor) { astVisitor.visit(this); }
     }
 
-    record Unop(Expr expr, Operator operator, Type type) implements Expr { }
+    record Unop(Expr expr, Operator operator, Type type) implements Expr {
+        public void visit(AstVisitor astVisitor) { astVisitor.visit(this);}
+    }
 
     record Binop(Expr left, Expr right, Operator op) implements Expr {
         public Type type() {

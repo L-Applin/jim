@@ -1,13 +1,35 @@
+// syntax
+// variable:
+// <name> : <Type?> = <Expr> ;
+my_var_1: Int = 42;
 
+// infered:
+// <name> := <Expr>
+my_var_2 := 4
+
+// constant
+// <name> :: <value> ;
+my_const :: 42 ;
+
+// function:
+// <name> :: <Function Type> = <arg list> -> { <body> }
+my_fun :: String -> Int = str -> {
+  return len(str) + 42;
+}
+
+// new type / type alias
+// <name> :: Type = <type definition>
 Size_t :: Type = Int ;
 
+// array type
+// [ <base type> ]
 sizes :: [Size_t] = [1, 2, 3, 4, 5, 6, 7, 8];
 
 // jai it and it_index?
 for sizes {
   if (it % 2 == 0) {
-    println(it);
-    println(it_index);
+    println(it);        // >>> 2, 4, 6, 8
+    println(it_index);  // >>> 0, 1, 2, 3, 4, 5, 6, 7
   }
 }
 
@@ -33,6 +55,7 @@ Maybe A :: Type = Just A
              ;
 
 
+// should suppot recursive types
 List A :: Type = Nil | Cons A (List A) ;
 
 Funs A B :: Type = List (A -> B) ;
@@ -48,7 +71,8 @@ Functor F :: Class {
   fmap :: (a -> b, F a) -> F b ;
 }
 
-Applicative F :: Class <F: Functor> {
+// type requirements
+Applicative F <F: Functor> :: Class  {
   pure :: a -> F a ;
   lift :: (F (a -> b), F a) -> F b ;
 }
@@ -97,6 +121,18 @@ List A :: Implementation Functor A {
     }
     return lb
   }
+}
+
+Default :: Class {
+    default :: () -> Default;
+}
+
+List A Implementation :: Default {
+  default :: () -> List A = [];
+}
+
+Int Implementation :: Default {
+  default :: () -> Int = 0;
 }
 
 // kind_of(List) => A -> Type
@@ -169,11 +205,11 @@ My_Stack A :: Implementation Stack A {
 stack := My_Stack([], 0) ;
 
 for [0..10] stack.push(it);
-println(stack.pop()) // syntactic sugar for println(pop(stack))
+println(stack.pop()); // syntactic sugar for println(pop(stack))
 // >>> 9
 
-push(stack, 42)
-println(pop(stack)) // so this also works,
+push(stack, 42);
+println(pop(stack)); // so this also works,
 // >>> 42
 
 // can be done without a Type Class:
@@ -187,28 +223,36 @@ My_Queue A :: Type {
     return true ;
   }
 
-  dequeue :: (this) -> A =
+  dequeue :: this -> A =
   this -> {
     return this.elems[ptr--];
   }
 }
 
+flip :: ((A, B) -> C) -> ((B, A) -> C) = f -> {
+  return (b, a) -> f (A, b);
+}
 queue: My_Queue Int = My_Queue();
 queue.push(1);
-queue.push(2);
+push(deque, 2);
 println(queue.dequeu()); // >>> 1
 queue.push(3);
-println(queue.dequeu()); // >>> 2
+println(dequeu(queue)); // >>> 2
 
+// curry?
+push_2 :: My_Queue Int -> Int = flip(push)(2)
 
 
 
 
 // ----------------------------------------------------------------------------------------------
-// propositions, none of that is certain...
-// everything below is experimentations
+// ----------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------
+// propositions, Ideas, thoughts...
+// none of that is certain... everything below is experimentations
 
 
+// ----------------------------------------------------------------------------------------------
 // Types as parameters
 type_as_param :: $T -> String = t -> type_of(t) ; // $T means it accept a Type T, not a value of type T
 type_as_param :: $T -> String = t -> $t ;         // possibly? $t could be a shorthand syntax for type_of(t) ...
@@ -219,6 +263,9 @@ type_as_param :: Type T -> String = t -> type_of(t) ;
 println(type_as_param(Int)) ; // ok, prints 'Type' beacause type_of(Int) is 'Type'
 type_as_param(42) ; // Error, 42 is not a type
 
+
+// ----------------------------------------------------------------------------------------------
+// CONSTRUCTORS
 // Constructor for Class types, used for encapsluation?
 Stack :: Constructor $T -> Stack T = _ -> My_Stack([], 0);
 // could be done just with a regular function
@@ -231,20 +278,21 @@ stack  := Stack(Int);                // inferred as Stack Int, not My_Stack Int 
 stack3 := Stack($0)                  // $0 would evalute to Int, as
 stack2 := make_stack(type_of(0));    //
 
-// would allows to reuse the identifier `Stack` as a constructor
+// but would allows to reuse the identifier `Stack` as a constructor
 
-// todo
-// code block ?
+
+// ----------------------------------------------------------------------------------------------
+// CODE BLOCK
 block :: Code = {
   x := 42 ;
   y := 69 ;
   println(x + y);
 }
 
-run(block)
+run(block);
 // >>> 111
 
-outer: "This is from outside the code block") ;
+outer := "This is from outside the code block" ;
 
 closure :: Code = {
   println("Code blocks would have Closures") ;
@@ -272,8 +320,11 @@ a: SomeBlock Int = SomeBlock(42, {
 println(a.x + run(a.code))
 // >>> 111
 
-// todo Macros?
-// Rust macro are very interresting...
+
+// ----------------------------------------------------------------------------------------------
+// Macros??
+// Rust macro are very interresting!
+// can create macros directly from parsed token, or from ast?
 // assertEq!(TypeParser("A -> Either A B").parse(), fun!(A, gen!(Either A B)));
 
 fun! :: Macro {
@@ -283,11 +334,17 @@ fun! :: Macro {
 }
 
 
-// Java interop?
+// ----------------------------------------------------------------------------------------------
+// JAVA INTEROP ???
 // imports, method calls.......
-@import static java.utils.Collections;
-@import java.utils.List as JList; // todo
-// Automatic implementations like Haskell `deriving (...)` or Rust `#[derives(...)]
+// import and rename imported reference with 'as' keyword?
+@import static java.utils.Collections
+@import java.utils.List as JList;
+
+
+// ----------------------------------------------------------------------------------------------
+// DERIVES
+// Automatic implementations like Haskell `deriving (...)` or Rust `#[derives(...)] ?
 
 // manually:
 Eq :: Class {
@@ -317,30 +374,54 @@ println(Some(42, "69") == Some(42, 69))
 // eq() would be a special case where == can be used instead
 println(eq(Some(42, "69"), Some(42, 69))) // "desugar"
 
-// -----
 // now, with @derives(...)
 @derives(Eq)
 SomeOther :: Type {
   x: Int ;
   y: String ;
 }
-// need to check that all members derives or implements Eq themselves
+// need to check that all members derives/implements Eq themselves
 // what about function types??
 
-println(SomeOther(42, "60"), SomeOther(42, "69")) ; // ok because automatically derived Eq with each member
+println(SomeOther(42, "60") == SomeOther(42, "69")) ; // ok because automatically derived Eq with each member
 // >>> true
 
 
 
-
-// pure function ?
-
-@pure
-add :: (Int, Int) -> Int = (i, j) -> i + j;
-
+// ----------------------------------------------------------------------------------------------
+// PURE FUNCTION?
 // with @pure, you can only
 //   - call other pure functions
 //   - access variables passed to the function
 //   - read constant
 
+@pure
+add :: (Int, Int) -> Int = (i, j) -> i + j;
 
+
+// ----------------------------------------------------------------------------------------------
+// DECONSTRUCTION
+// let bindings? (Rust)
+Point :: Type {
+    x: Int;
+    y: Int
+}
+
+Rect :: Type {
+    p1: Point;
+    p2: Point;
+}
+
+p := Point(42, 69);
+
+let Point(x, y) = p;
+print(x + y); // >>> 111
+
+rect := Rect(Point(1, 2), Point(3, 4));
+let Rect(Point(x1, y1), Point(x2, y2)) = rect;
+print(x1 + y1 + x2 + y2); // 10
+
+// deconstruction in function arguments
+swap :: Rect -> Rect = Rect(Point(x1, y1), Point(x2, y2)) -> {
+  return Rect(Point(x1, y2), Point(x2, y1));
+}

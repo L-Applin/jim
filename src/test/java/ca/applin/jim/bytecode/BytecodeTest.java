@@ -13,6 +13,7 @@ import static ca.applin.jim.bytecode.Instruction.iadd;
 import static ca.applin.jim.bytecode.Instruction.iload_1;
 import static ca.applin.jim.bytecode.Instruction.iload_2;
 import static ca.applin.jim.bytecode.Instruction.invokespecial;
+import static ca.applin.jim.bytecode.Instruction.invokevirtual;
 import static ca.applin.jim.bytecode.Instruction.ireturn;
 import static ca.applin.jim.bytecode.Instruction.return_void;
 import static org.junit.jupiter.api.Assertions.*;
@@ -29,7 +30,7 @@ class BytecodeTest {
 
     /** <pre>
      *  package jim;
-     *  public class BytecodeTestAdd {
+     *  public class TestAuto {
      *      public int add(int i, int j) {
      *          return i + j;
      *      }
@@ -47,7 +48,7 @@ class BytecodeTest {
                 utf8_info("<init>"),                                // #5
                 utf8_info("()V"),                                   // #6
                 class_info((short) 8),                              // #7
-                utf8_info("jim/BytecodeTestAdd"),                   // #8
+                utf8_info("jim/TestAuto"),                          // #8
                 utf8_info("add"),                                   // #9
                 utf8_info("(II)I"),                                 // #10
                 nameAndType_info((short) 9,(short) 10),             // #11
@@ -65,18 +66,18 @@ class BytecodeTest {
         Attribute_Info[] add_attributes = new Attribute_Info[] {
                 code(13, (short) 2, (short) 3, add_code, new Exception_Table[0], new Attribute_Info[0])
         };
-        Method add_method = new Method(Method.Flag.ACC_PUBLIC, 9, 10, add_attributes.length, add_attributes);
+        Method add_method = new Method(Method.FLAG_ACC_PUBLIC, 9, 10, add_attributes.length, add_attributes);
 
         // <init> required method
         byte[] init_code = bytecode(
-                aload_0(),
-                invokespecial((byte) 0x00, (byte) 0x01),
+                aload_0(), // load `this`
+                invokevirtual((byte) 0x00, (byte) 0x01, (short) 0),
                 return_void()
         );
         Attribute_Info[] init_code_attr = new Attribute_Info[] {
                 code(13, (short) 1, (short) 1, init_code, new Exception_Table[0], new Attribute_Info[0])
         };
-        Method init_method = new Method(Method.Flag.ACC_PUBLIC, 5, 6, init_code_attr.length, init_code_attr);
+        Method init_method = new Method(Method.FLAG_ACC_PUBLIC, 5, 6, init_code_attr.length, init_code_attr);
 
         Class_File test_class = new Class_File(
                 JAVA_11_CLASS_MINOR_VERION,
@@ -92,28 +93,14 @@ class BytecodeTest {
         );
         final byte[] content = test_class.get_content();
         Files.createDirectories(Path.of("target/generated-test-sources/classes/jim/"));
-        FileOutputStream fos = new FileOutputStream("target/generated-test-sources/classes/jim/BytecodeTestAdd.class");
+        FileOutputStream fos = new FileOutputStream("target/generated-test-sources/classes/jim/TestAuto.class");
         fos.write(content);
         fos.flush();
-        Class<?> clz = new DirectByteClassLoader(content).findClass("jim.BytecodeTestAdd");
-        Object o = clz.getConstructor().newInstance();
+        Class<?> clz = new DirectByteClassLoader(content).findClass("jim.TestAuto");
+        Object o = clz.getConstructor().newInstance(); // an instance of jim.BytecodeTestAdd
         int res = (int) clz.getMethod("add", int.class, int.class).invoke(o, 69, 42);
         assertEquals(111, res);
     }
 
-
-    /** <pre>
-     *  package jim;
-     *  public class ByteCodeTestLitteral {
-     *      public int nice(String str) {
-     *          return str + 69;
-     *      }
-     *  }
-     * </pre>
-     */
-    @Test
-    public void add_litterals() {
-
-    }
 
 }

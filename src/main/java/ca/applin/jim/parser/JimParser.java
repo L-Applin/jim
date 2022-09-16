@@ -37,7 +37,7 @@ public class JimParser implements Parser<Ast>  {
 
     @Override
     public Maybe<Ast> parse() {
-        log.info("    parsing %s", lexer.filename);
+        log.info("    parsing: %s", lexer.filename);
         Maybe<CodeBlock> head = nothing();
         while (lexer.hasNext()) {
             // top level for a file
