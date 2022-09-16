@@ -27,7 +27,7 @@ java jim.Simple
 ```
 
 ## requirements
-[ji](https://github.com/L-Applin/jib) is required. You can clone the jib repository and `mvn clean install` so that the lib is available to locally.
+**[jib](https://github.com/L-Applin/jib)** is required. You can clone the jib repository and `mvn clean install` so that the lib is available to locally.
 
 ## Features
 Core support for functional types:
