@@ -7,12 +7,14 @@ Haskell type system, Kotlin/Haskell syntax, Java performance, semantics and ecos
 **Everything subject to change.**
 
 ## stages
-[x] hello world
-[] all control flow:
-[] for
-[] if
-[] case
-[]
+- [x] hello world
+- [ ] local variables
+- [ ] all control flow:
+      - [ ] for
+      - [ ] if
+      - [ ] case
+- [] 
+... and much more
 
 ## Examples
 Working Helllo world:
