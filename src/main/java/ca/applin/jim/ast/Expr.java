@@ -1,7 +1,9 @@
 package ca.applin.jim.ast;
 
 import ca.applin.jim.ast.Type.ArrayType;
+import ca.applin.jim.ast.Type.DoubleType;
 import ca.applin.jim.ast.Type.FunctionType;
+import ca.applin.jim.ast.Type.IntegerType;
 import ca.applin.jim.lexer.LexerToken.Location;
 import java.util.ArrayList;
 import java.util.List;
@@ -63,7 +65,16 @@ public interface Expr extends Ast {
 
     record Binop(Expr left, Expr right, Operator op) implements Expr {
         public Type type() {
-            return left().type().equals(right().type()) ? left().type() : Type.UNKNOWN;
+            final Type rightType = right.type();
+            final Type leftType = left.type();
+            if (leftType.equals(rightType)) {
+                return left().type();
+            }
+            if ((leftType instanceof IntegerType && rightType instanceof DoubleType)
+                || (rightType instanceof IntegerType && leftType instanceof DoubleType))  {
+                    return Type.DOUBLE;
+            }
+            return Type.UNKNOWN;
         }
 
         public String toString() {

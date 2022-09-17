@@ -16,11 +16,18 @@ import static ca.applin.jim.bytecode.Constant_Pool_Info.utf8_info;
 import static ca.applin.jim.bytecode.Instruction.aload_0;
 import static ca.applin.jim.bytecode.Instruction.bipush;
 import static ca.applin.jim.bytecode.Instruction.bytecode;
+import static ca.applin.jim.bytecode.Instruction.dadd;
+import static ca.applin.jim.bytecode.Instruction.ddiv;
+import static ca.applin.jim.bytecode.Instruction.dmul;
+import static ca.applin.jim.bytecode.Instruction.dsub;
 import static ca.applin.jim.bytecode.Instruction.getstatic;
+import static ca.applin.jim.bytecode.Instruction.i2d;
 import static ca.applin.jim.bytecode.Instruction.iadd;
+import static ca.applin.jim.bytecode.Instruction.idiv;
 import static ca.applin.jim.bytecode.Instruction.imul;
 import static ca.applin.jim.bytecode.Instruction.invokespecial;
 import static ca.applin.jim.bytecode.Instruction.invokevirtual;
+import static ca.applin.jim.bytecode.Instruction.isub;
 import static ca.applin.jim.bytecode.Instruction.ldc;
 import static ca.applin.jim.bytecode.Instruction.ldc2_w;
 import static ca.applin.jim.bytecode.Instruction.return_void;
@@ -272,26 +279,62 @@ public class ClassBytecodeGenerator extends AstVisitorAdapter {
 
     @Override
     public void visit(Binop binop) {
+
         binop.left().visit(this);
+        final Type binopType = binop.type();
+        final Type leftType = binop.left().type();
+        final Type rightType = binop.right().type();
+        if (binopType instanceof DoubleType) {
+            if (leftType instanceof IntegerType) {
+                add_instruction(i2d());
+            }
+        }
+
         binop.right().visit(this);
+        if (binopType instanceof DoubleType) {
+            if (rightType instanceof IntegerType) {
+                add_instruction(i2d());
+            }
+        }
+
         switch (binop.op()) {
+
             case PLUS -> {
-                switch (binop.type()) {
-                    case IntegerType __-> add_instruction(iadd());
+                switch (binopType) {
+                    case IntegerType __ -> add_instruction(iadd());
+                    case DoubleType __ -> add_instruction(dadd());
                     case Unknown __ -> todo("report unknown type for " + binop);
                     default -> todo("Plus for type " + binop.type());
                 }
             }
-            case MINUS -> todo();
+
+            case MINUS -> {
+                switch (binopType) {
+                    case IntegerType __ -> add_instruction(isub());
+                    case DoubleType __ -> add_instruction(dsub());
+                    case Unknown __ -> todo("report unknown type for " + binop);
+                    default -> todo("Minus for type " + binop.type());
+                }
+            }
+
             case TIMES -> {
-                switch (binop.type()) {
+                switch (binopType) {
                     case IntegerType __ -> add_instruction(imul());
+                    case DoubleType __-> add_instruction(dmul());
                     case Unknown __ -> todo("report unknown type for " + binop);
-                    default -> todo("Plus for type " + binop.type());
+                    default -> todo("Times for type " + binop.type());
                 }
             }
-            case DIV -> {
+
+        case DIV -> {
+                switch (binop.type()) {
+                    case IntegerType __ -> add_instruction(idiv());
+                    case DoubleType __-> add_instruction(ddiv());
+                    case Unknown __ -> todo("report unknown type for " + binop);
+                    default -> todo("Div for type " + binop.type());
+                }
             }
+
             case MOD -> {
             }
             case LOGICAL_OR -> {

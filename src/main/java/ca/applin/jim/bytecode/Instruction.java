@@ -30,19 +30,31 @@ public class Instruction {
                              iload_2       = 0x1c,
                              iload_3       = 0x1d;
 
+    // Add, Subtract, multiply, divides etc int
+    public static final byte iadd          = 0x60,
+                             isub          = 0x64,
+                             imul          = 0x68,
+                             idiv          = 0x6c,
+                             irem          = 0x70;
+
+    public static final byte dadd          = 0x63,
+                             dsub          = 0x67,
+                             dmul          = 0x6b,
+                             ddiv          = 0x6f;
+
+    // Convert int to double
+    public static final byte i2d           = (byte) 0x87;
+
     // Push byte to operand stack
     public static final byte bipush        = 0x10;
 
     // Push long or double from run-time constant pool (wide index)
     public static final byte ldc2_w        = 0x14;
 
-    public static final byte iadd          = 0x60;
 
-    // Multiply int
-    public static final byte imul          = 0x68;
-    public static final byte ireturn       = (byte) 0xAC;
+    public static final byte ireturn        = (byte) 0xAC;
 
-    public static final byte return_void   = (byte) 0xb1;
+    public static final byte return_void    = (byte) 0xb1;
 
     // Get static field from class
     public static final byte getstatic      = (byte) 0xb2;
@@ -103,9 +115,17 @@ public class Instruction {
     }
 
     public static Instruction iadd() { return new Instruction(iadd, (short) -1); }
+    public static Instruction isub() { return new Instruction(isub, (short) -1); }
     public static Instruction imul() { return new Instruction(imul, (short) -1); }
-
+    public static Instruction idiv() { return new Instruction(idiv, (short) -1); }
     public static Instruction ireturn() { return new Instruction(ireturn, (short) -1); }
+
+    public static Instruction dadd() { return new Instruction(dadd, (short) -1); }
+    public static Instruction dsub() { return new Instruction(dsub, (short) -1); }
+    public static Instruction dmul() { return new Instruction(dmul, (short) -1); }
+    public static Instruction ddiv() { return new Instruction(ddiv, (short) -1); }
+
+    public static Instruction i2d() { return new Instruction(i2d, (short) 1); }
 
     public static Instruction return_void() { return new Instruction(return_void, (short) 0); }
 

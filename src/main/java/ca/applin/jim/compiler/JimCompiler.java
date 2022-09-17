@@ -34,7 +34,6 @@ public class JimCompiler {
         final Instant parsingEnd = Instant.now();
         log.info("Starting bytecode generation");
         Instant bytecodeStart = Instant.now();
-//        asts.forEach(mAst -> mAst.ifPresent(ast -> new JimInterpreter().interp(ast)));
         asts.forEach(pair -> pair.snd().ifPresent(ast -> generateByteCode(ast, pair.fst())));
         log.info("Done generating bytecode");
         log.info("============");
@@ -45,6 +44,7 @@ public class JimCompiler {
     }
 
     void generateByteCode(Ast ast, String filename) {
+        System.out.println(ast);
         final Path path = Paths.get(filename);
         String file = removeExtenstion(path.getFileName().toString());
         String _package = "jim";

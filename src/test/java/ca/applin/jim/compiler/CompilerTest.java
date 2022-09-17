@@ -1,8 +1,7 @@
 package ca.applin.jim.compiler;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
-import ca.applin.jim.compiler.JimCompiler;
 import java.io.File;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -18,10 +17,13 @@ public class CompilerTest {
     public void testParseFile(String filepath) throws Exception {
         JimCompiler compiler = new JimCompiler();
         compiler.compile(filepath);
-        URLClassLoader urlClassLoader = new URLClassLoader(
-            new URL[]{ new File("target/generated-test-sources/classes/").toURI().toURL()});
-        urlClassLoader.loadClass("jim.Simple").getMethod("main", String[].class)
-                .invoke(null, (Object) new String[0]);
+        try (URLClassLoader urlClassLoader = new URLClassLoader(
+            new URL[]{ new File("target/generated-test-sources/classes/").toURI().toURL()})) {
+            urlClassLoader.loadClass("jim.Simple").getMethod("main", String[].class)
+                    .invoke(null, (Object) new String[0]);
+        } catch (ClassNotFoundException cnfe) {
+            fail(cnfe.getMessage(), cnfe);
+        }
     }
 
 }
