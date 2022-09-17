@@ -4,7 +4,7 @@ import ca.applin.jim.ast.Ast.Atom;
 import ca.applin.jim.ast.Expr;
 import ca.applin.jim.ast.Expr.ArrayLitteral;
 import ca.applin.jim.ast.Expr.Binop;
-import ca.applin.jim.ast.Expr.FloatLitteral;
+import ca.applin.jim.ast.Expr.DoubleLitteral;
 import ca.applin.jim.ast.Expr.FunctionCall;
 import ca.applin.jim.ast.Expr.IntegerLitteral;
 import ca.applin.jim.ast.Expr.PExpr;
@@ -68,8 +68,8 @@ public class TestUtils {
         return new IntegerLitteral(i);
     }
 
-    static FloatLitteral litteral(double d) {
-        return new FloatLitteral(d);
+    static DoubleLitteral litteral(double d) {
+        return new DoubleLitteral(d);
     }
 
     static StringLitteral litteral(String s) {

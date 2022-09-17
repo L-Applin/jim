@@ -10,7 +10,7 @@ import ca.applin.jim.ast.Decl.VarDecl;
 import ca.applin.jim.ast.Expr.ArrayLitteral;
 import ca.applin.jim.ast.Expr.Binop;
 import ca.applin.jim.ast.Expr.DeRef;
-import ca.applin.jim.ast.Expr.FloatLitteral;
+import ca.applin.jim.ast.Expr.DoubleLitteral;
 import ca.applin.jim.ast.Expr.FunctionCall;
 import ca.applin.jim.ast.Expr.IntegerLitteral;
 import ca.applin.jim.ast.Expr.PExpr;
@@ -23,7 +23,7 @@ import ca.applin.jim.ast.Stmt.IfStmt;
 import ca.applin.jim.ast.Stmt.ImportStmt;
 import ca.applin.jim.ast.Stmt.WhileStmt;
 import ca.applin.jim.ast.Type.ArrayType;
-import ca.applin.jim.ast.Type.FloatType;
+import ca.applin.jim.ast.Type.DoubleType;
 import ca.applin.jim.ast.Type.FunctionType;
 import ca.applin.jim.ast.Type.GenericType;
 import ca.applin.jim.ast.Type.IntegerType;
@@ -98,8 +98,8 @@ public class JimInterpreter {
         }
 
         @Override
-        public void visit(FloatLitteral floatLitteral) {
-            System.out.println("visit FLOAT LITTERAL: " + floatLitteral.toString());
+        public void visit(DoubleLitteral doubleLitteral) {
+            System.out.println("visit FLOAT LITTERAL: " + doubleLitteral.toString());
         }
 
         @Override
@@ -261,7 +261,7 @@ public class JimInterpreter {
         }
 
         @Override
-        public void visit(FloatType floatType) {
+        public void visit(DoubleType doubleType) {
             System.out.println("visit FLOAT PRIMITIVE TYPE");
         }
     }

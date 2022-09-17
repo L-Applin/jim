@@ -3,7 +3,6 @@ package ca.applin.jim.bytecode;
 import ca.applin.jim.ast.Type;
 import ca.applin.jim.ast.Type.Void;
 import java.lang.constant.ClassDesc;
-import java.lang.invoke.MethodType;
 import java.lang.invoke.TypeDescriptor;
 
 import static ca.applin.jib.utils.Utils.todo;
@@ -25,7 +24,7 @@ public class TypeDescriptorMapper {
             case SimpleType sp -> ClassDesc.of(sp.name()); // ... todo resolve full name ...
             case StringType st -> CD_String;
             case IntegerType it -> CD_Integer;
-            case FloatType ft -> CD_Double;
+            case DoubleType ft -> CD_Double;
             case ArrayType at -> CD_List;
             case GenericType gt -> toTypeDesciptor(gt.type());
             case FunctionType functionType -> forMethod(functionType);

@@ -30,6 +30,11 @@ public class Instruction {
                              iload_2       = 0x1c,
                              iload_3       = 0x1d;
 
+    // Push byte to operand stack
+    public static final byte bipush        = 0x10;
+
+    // Push long or double from run-time constant pool (wide index)
+    public static final byte ldc2_w        = 0x14;
 
     public static final byte iadd          =  0x60;
     public static final byte ireturn       = (byte) 0xAC;
@@ -89,6 +94,10 @@ public class Instruction {
         };
     }
 
+    public static Instruction ldc2_w(byte indexbyte1, byte indexbyte2) {
+        return new Instruction(new byte[] {ldc2_w, indexbyte1, indexbyte2}, (short) 2);
+    }
+
     public static Instruction iadd() { return new Instruction(iadd, (short) -1); }
 
     public static Instruction ireturn() { return new Instruction(ireturn, (short) -1); }
@@ -109,6 +118,10 @@ public class Instruction {
 
     public static Instruction ldc(byte index) {
         return new Instruction(new byte[] { ldc, index }, (short) 1);
+    }
+
+    public static Instruction bipush(byte value) {
+        return new Instruction(new byte[] { bipush, value }, (short) 1);
     }
 
     public byte[] bytes;

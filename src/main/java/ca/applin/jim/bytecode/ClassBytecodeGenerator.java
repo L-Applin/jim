@@ -6,17 +6,21 @@ import static ca.applin.jim.bytecode.Attribute_Info.code;
 import static ca.applin.jim.bytecode.Class_File.JAVA_11_CLASS_MAJOR_VERION;
 import static ca.applin.jim.bytecode.Class_File.JAVA_11_CLASS_MINOR_VERION;
 import static ca.applin.jim.bytecode.Constant_Pool_Info.class_info;
+import static ca.applin.jim.bytecode.Constant_Pool_Info.double_info;
 import static ca.applin.jim.bytecode.Constant_Pool_Info.fieldRef_info;
+import static ca.applin.jim.bytecode.Constant_Pool_Info.integer_info;
 import static ca.applin.jim.bytecode.Constant_Pool_Info.methodRef_info;
 import static ca.applin.jim.bytecode.Constant_Pool_Info.nameAndType_info;
 import static ca.applin.jim.bytecode.Constant_Pool_Info.string_info;
 import static ca.applin.jim.bytecode.Constant_Pool_Info.utf8_info;
 import static ca.applin.jim.bytecode.Instruction.aload_0;
+import static ca.applin.jim.bytecode.Instruction.bipush;
 import static ca.applin.jim.bytecode.Instruction.bytecode;
 import static ca.applin.jim.bytecode.Instruction.getstatic;
 import static ca.applin.jim.bytecode.Instruction.invokespecial;
 import static ca.applin.jim.bytecode.Instruction.invokevirtual;
 import static ca.applin.jim.bytecode.Instruction.ldc;
+import static ca.applin.jim.bytecode.Instruction.ldc2_w;
 import static ca.applin.jim.bytecode.Instruction.return_void;
 
 import ca.applin.jib.utils.Just;
@@ -24,11 +28,13 @@ import ca.applin.jim.ast.Ast;
 import ca.applin.jim.ast.AstVisitorAdapter;
 import ca.applin.jim.ast.Decl.FunctionDecl;
 import ca.applin.jim.ast.Expr;
+import ca.applin.jim.ast.Expr.DoubleLitteral;
 import ca.applin.jim.ast.Expr.IntegerLitteral;
 import ca.applin.jim.ast.Expr.ReturnExpr;
 import ca.applin.jim.ast.Expr.StringLitteral;
 import ca.applin.jim.ast.Intrinsic.Print;
 import ca.applin.jim.ast.Type;
+import ca.applin.jim.ast.Type.DoubleType;
 import ca.applin.jim.ast.Type.FunctionType;
 import ca.applin.jim.ast.Type.IntegerType;
 import ca.applin.jim.ast.Type.StringType;
@@ -91,6 +97,12 @@ public class ClassBytecodeGenerator extends AstVisitorAdapter {
             "(I)V"
     );
 
+    public static final MethodRef PRINT_LN_DOUBLE_METHOD_REF = new MethodRef(
+            "java/io/PrintStream",
+            "println",
+            "(D)V"
+    );
+
     public static final Constant_Pool_Info UTF8_CODE_CONSTANT_POOL_INFO = utf8_info("Code");
     public static final short UTF8_CODE_CONSTANT_POOL_INFO_INDEX = 7;
 
@@ -115,7 +127,7 @@ public class ClassBytecodeGenerator extends AstVisitorAdapter {
     private final Map<FunctionDecl, List<Instruction>> instructions = new HashMap<>();
     private final Stack<FunctionDecl> funcDecls = new Stack<>();
 
-    private short max_stack = 0, current_stack = 0, max_locals = 0, current_locals = 0;
+    private short max_stack = 0, current_stack = 0, max_locals = 0, current_locals = 0, index_offset = 0;
 
     private final TypeDescriptorMapper typeDescriptorMapper = new TypeDescriptorMapper();
     private final List<Constant_Pool_Info> constantPoolInfos = new ArrayList<>() {{
@@ -125,8 +137,6 @@ public class ClassBytecodeGenerator extends AstVisitorAdapter {
 
     private List<Method> methods = new ArrayList<>();
 
-    // (Ljava/util/List<Ljava/lang/String;>;)V
-    // (Ljava/util/List<Ljava/lang/String;>;)V
     public byte[] generate(Ast ast) {
         byte[] init_code = bytecode(
                 aload_0(), // load `this`
@@ -140,13 +150,14 @@ public class ClassBytecodeGenerator extends AstVisitorAdapter {
         methods.add(init_method);
         ast.visit(this);
         constantPoolInfos.add(class_info(addUtf8ToConstantPool(_package + "/" + file)));
-        int this_class = constantPoolInfos.size();
+        short this_class = current_index();
         Class_File test_class = new Class_File(
                 JAVA_11_CLASS_MINOR_VERION,
                 JAVA_11_CLASS_MAJOR_VERION,
                 constantPoolInfos.toArray(new Constant_Pool_Info[0]),
+                index_offset,
                 (short) (Flag.ACC_PUBLIC | Flag.ACC_SUPER),
-                (short) this_class,
+                this_class,
                 (short) 2,
                 new Interface[0],
                 new Field[0],
@@ -164,8 +175,8 @@ public class ClassBytecodeGenerator extends AstVisitorAdapter {
         instructions.put(funDecl, new ArrayList<>());
         Type type = funDecl.type()
                 .orElseThrow(new ParserException("Unknown type: " + funDecl.type()));
-        String typeDescr = typeDescriptorMapper.typeToDescriptor(type);
-        int typeDescriptorIndex = addUtf8ToConstantPool(typeDescr);
+        String type_descr = typeDescriptorMapper.typeToDescriptor(type);
+        int type_descriptor_index = addUtf8ToConstantPool(type_descr);
         int name_index = addUtf8ToConstantPool(funDecl.name().value());
         funDecl.body().visit(this); // will generate the Instructions in instructions map
         List<Instruction> code = instructions.get(funDecl);
@@ -190,7 +201,7 @@ public class ClassBytecodeGenerator extends AstVisitorAdapter {
         Method method = new Method(
                 Method.FLAG_ACC_PUBLIC | Method.FLAG_ACC_STATIC,
                 name_index,
-                typeDescriptorIndex,
+                type_descriptor_index,
                 1,
                 new Attribute_Info[]{ code_info }
         );
@@ -212,12 +223,13 @@ public class ClassBytecodeGenerator extends AstVisitorAdapter {
         int system_out_field_ref = fieldRef(SYSTEM_OUT_FIELD_REF);
         byte[] sout_field_ref_index_bytes = ByteUtils.to_bytes_big((short) system_out_field_ref);
         add_instruction(getstatic(sout_field_ref_index_bytes[0], sout_field_ref_index_bytes[1]));
-        int method_ref = -1;
+        int method_ref;
         if (print.arg() instanceof Just<Expr> jExpr) {
             Expr expr = jExpr.elem();
             method_ref = switch (expr.type()) {
                 case StringType  s -> methodRef(PRINT_LN_STR_METHOD_REF);
                 case IntegerType i -> methodRef(PRINT_LN_INT_METHOD_REF);
+                case DoubleType  d -> methodRef(PRINT_LN_DOUBLE_METHOD_REF);
                 default -> todo("other types for println (got '%s')".formatted(expr.type()));
              };
              expr.visit(this); // will put the instruction that puts the value on the stack
@@ -226,36 +238,58 @@ public class ClassBytecodeGenerator extends AstVisitorAdapter {
             method_ref = methodRef(PRINT_LN_VOID_METHOD_REF);
         }
         byte[] print_ln_method_ref_bytes = ByteUtils.to_bytes_big((short) method_ref);
-        add_instruction(invokevirtual(print_ln_method_ref_bytes[0], print_ln_method_ref_bytes[1], (short) -1));
+        add_instruction(invokevirtual(print_ln_method_ref_bytes[0], print_ln_method_ref_bytes[1], (short) 2));
     }
 
     @Override
     public void visit(StringLitteral stringLitteral) {
         byte index = (byte) addStringToConstantPool(stringLitteral.value());
         add_instruction(ldc(index));
-        max_stack++;
     }
 
     @Override
     public void visit(IntegerLitteral integerLitteral) {
-        if (integerLitteral.value() < Byte.MAX_VALUE) {
-            // load imemdiate
+        if (integerLitteral.value() <= Byte.MAX_VALUE && integerLitteral.value() >= Byte.MIN_VALUE) {
+            add_instruction(bipush(integerLitteral.value().byteValue()));
             return;
         }
         // add to constant pool and load it
+        byte ref = (byte) addIntToConstantPool(integerLitteral.value());
+        add_instruction(ldc(ref));
+    }
 
+    @Override
+    public void visit(DoubleLitteral doubleLitteral) {
+        short index = addDoubleToConstantPool(doubleLitteral.value());
+        byte[] index_bytes = ByteUtils.to_bytes_big(index);
+        add_instruction(ldc2_w(index_bytes[0], index_bytes[1]));
     }
 
     private short addUtf8ToConstantPool(String typeDescr) {
         constantPoolInfos.add(utf8_info(typeDescr));
-        return (short) constantPoolInfos.size();
+        return current_index();
     }
 
-    private int addStringToConstantPool(String str) {
+    private short addStringToConstantPool(String str) {
         // todo check if constant does not already exists
         short utf8Index = addUtf8ToConstantPool(str);
         constantPoolInfos.add(string_info(utf8Index));
-        return constantPoolInfos.size();
+        return current_index();
+    }
+
+    private short addIntToConstantPool(int value) {
+        constantPoolInfos.add(integer_info(value));
+        return current_index();
+    }
+
+    private short addDoubleToConstantPool(double value) {
+        long bytes = Double.doubleToRawLongBits(value);
+        int low_bytes  = (int) bytes;
+        int high_bytes = (int) ((bytes & 0x00000000FFFFFFFF) >> 32);
+        constantPoolInfos.add(double_info(high_bytes, low_bytes));
+        short index = current_index();
+        index_offset++;
+        return index;
     }
 
     private record FieldRef(String clz, String field, String type) {
@@ -270,13 +304,13 @@ public class ClassBytecodeGenerator extends AstVisitorAdapter {
         int ref_field = addUtf8ToConstantPool(fieldRef.field);
         int ref_type = addUtf8ToConstantPool(fieldRef.type);
         constantPoolInfos.add(class_info((short) ref_class));
-        int ref_class_info = constantPoolInfos.size();
+        int ref_class_info = current_index();
         constantPoolInfos.add(nameAndType_info((short) ref_field, (short) ref_type));
-        int ref_name_and_type = constantPoolInfos.size();
+        int ref_name_and_type = current_index();
         constantPoolInfos.add(fieldRef_info((short) ref_class_info, (short) ref_name_and_type));
 
-        fieldRefs.put(fieldRef, constantPoolInfos.size());
-        return constantPoolInfos.size();
+        fieldRefs.put(fieldRef, (int) current_index());
+        return current_index();
     }
 
     private record MethodRef(String clz, String name, String type) {
@@ -292,13 +326,13 @@ public class ClassBytecodeGenerator extends AstVisitorAdapter {
         int ref_type = addUtf8ToConstantPool(methodRef.type());
 
         constantPoolInfos.add(class_info((short) ref_class));
-        int ref_class_info = constantPoolInfos.size();
+        short ref_class_info = current_index() ;
         constantPoolInfos.add(nameAndType_info((short) ref_name, (short) ref_type));
-        int ref_name_and_type = constantPoolInfos.size();
-        constantPoolInfos.add(methodRef_info((short) ref_class_info, (short) ref_name_and_type));
+        short ref_name_and_type = current_index() ;
+        constantPoolInfos.add(methodRef_info(ref_class_info, ref_name_and_type));
 
-        methodRefs.put(methodRef, constantPoolInfos.size());
-        return constantPoolInfos.size();
+        methodRefs.put(methodRef, (int) current_index());
+        return current_index() ;
     }
 
     public void add_instruction(Instruction instruction) {
@@ -308,4 +342,9 @@ public class ClassBytecodeGenerator extends AstVisitorAdapter {
         current_stack += instruction.stack_value_added;
         max_stack = (short) Math.max(max_stack, current_stack);
     }
+
+    private short current_index() {
+        return (short) (constantPoolInfos.size() + index_offset);
+    }
+
 }

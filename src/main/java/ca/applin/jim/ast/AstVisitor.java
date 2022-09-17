@@ -6,7 +6,7 @@ import static ca.applin.jim.ast.Expr.*;
 import static ca.applin.jim.ast.Stmt.*;
 
 import ca.applin.jim.ast.Type.ArrayType;
-import ca.applin.jim.ast.Type.FloatType;
+import ca.applin.jim.ast.Type.DoubleType;
 import ca.applin.jim.ast.Type.FunctionType;
 import ca.applin.jim.ast.Type.GenericType;
 import ca.applin.jim.ast.Type.IntegerType;
@@ -35,7 +35,7 @@ public interface AstVisitor {
     void visit(VarAssign varAssign);
 
     void visit(IntegerLitteral integerLitteral);
-    void visit(FloatLitteral floatLitteral);
+    void visit(DoubleLitteral doubleLitteral);
     void visit(StringLitteral stringLitteral);
     void visit(ArrayLitteral arrayLitteral);
     void visit(Unop unop);
@@ -55,7 +55,7 @@ public interface AstVisitor {
     void visit(Primitive primitive);
     void visit(StringType stringType);
     void visit(IntegerType integerType);
-    void visit(FloatType floatType);
+    void visit(DoubleType doubleType);
     void visit(GenericType genericType);
     void visit(SumType sumType);
     void visit(StructType structType);

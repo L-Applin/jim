@@ -27,7 +27,7 @@ import ca.applin.jim.ast.Expr;
 import ca.applin.jim.ast.Expr.ArrayLitteral;
 import ca.applin.jim.ast.Expr.Binop;
 import ca.applin.jim.ast.Expr.DeRef;
-import ca.applin.jim.ast.Expr.FloatLitteral;
+import ca.applin.jim.ast.Expr.DoubleLitteral;
 import ca.applin.jim.ast.Expr.FunctionCall;
 import ca.applin.jim.ast.Expr.IntegerLitteral;
 import ca.applin.jim.ast.Expr.Litteral;
@@ -241,7 +241,7 @@ public class ExprParser implements Parser<Ast> {
                 String decimal = lexer.nextIf(tok -> tok.type() == SYM && isInteger(tok.str()))
                         .map(LexerToken::str).orElse("");
                 double d = Double.parseDouble(num + "." + decimal);
-                return just (new FloatLitteral(d));
+                return just (new DoubleLitteral(d));
             }
             return just(new IntegerLitteral(isMinus ? -i.elem() : i.elem()));
         }

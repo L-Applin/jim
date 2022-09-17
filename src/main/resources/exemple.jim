@@ -60,11 +60,11 @@ List A :: Type = Nil | Cons A (List A) ;
 
 Funs A B :: Type = List (A -> B) ;
 
-Num :: Class {
-  add :: (Num, Num) -> Num ;
-  sub :: (Num, Num) -> Num ;
-  mul :: (Num, Num) -> Num ;
-  div :: (Num, Num) -> Num ;
+Num N :: Class {
+  add :: (N, N) -> N;
+  sub :: (N, N) -> N;
+  mul :: (N, N) -> N;
+  div :: (N, N) -> N;
 }
 
 Functor F :: Class {
@@ -72,7 +72,7 @@ Functor F :: Class {
 }
 
 // type requirements
-Applicative F <F: Functor> :: Class  {
+Applicative F :: Class <F: Functor> {
   pure :: a -> F a ;
   lift :: (F (a -> b), F a) -> F b ;
 }
@@ -88,7 +88,7 @@ x :: Size_t = 420;
 y :: Size_t = 69;
 res: Size_t = add(x, y);
 
-Mabybe A :: Implementation Functor A, Applicative A {
+Mabybe :: Implementation Functor, Applicative {
 
   // Functor
   fmap :: (A -> B, Maybe A) -> Maybe B =
@@ -113,7 +113,7 @@ Mabybe A :: Implementation Functor A, Applicative A {
 
 
 // Functor needs a kind * -> *
-List A :: Implementation Functor A {
+List :: Implementation Functor {
   fmap :: (A -> B, List A) -> List B  = (f, as) -> {
     lb: List B = List()
     for as {
@@ -177,9 +177,9 @@ main :: [String] -> Int = args -> {
 
 
 // using `this` as the first arguments of class function can simulate OOP method call
-Stack A :: Class {
-  push :: (this, A) -> Bool ;
-  pop  :: (this) -> Maybe A ;
+Stack S :: Class {
+  push :: (S a, a) -> Bool ;
+  pop  :: (S a) -> Maybe a ;
 }
 
 My_Stack A :: Type {
@@ -187,7 +187,7 @@ My_Stack A :: Type {
   ptr: Int;
 }
 
-My_Stack A :: Implementation Stack A {
+My_Stack :: Implementation Stack {
   push :: (this, A) -> Bool = (this, a) -> {
     elems[this.ptr++] = a;
     return true;

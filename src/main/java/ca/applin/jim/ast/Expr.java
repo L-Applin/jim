@@ -34,11 +34,11 @@ public interface Expr extends Ast {
         public void visit(AstVisitor astVisitor) { astVisitor.visit(this); }
     }
 
-    record FloatLitteral(Double value) implements Litteral<Double> {
+    record DoubleLitteral(Double value) implements Litteral<Double> {
         public Litteral<Double> flipSign() {
-            return new FloatLitteral(-value());
+            return new DoubleLitteral(-value());
         }
-        public Type type() { return Type.FLOAT; }
+        public Type type() { return Type.DOUBLE; }
         public void visit(AstVisitor astVisitor) { astVisitor.visit(this); }
     }
 

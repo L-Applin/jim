@@ -112,11 +112,12 @@ public class Constant_Pool_Info {
         });
     }
 
+    // ((long) high_bytes << 32) + low_bytes
     public static Constant_Pool_Info double_info(int high_bytes, int low_bytes) {
         byte[] high = to_bytes_big(high_bytes);
         byte[] low  = to_bytes_big(low_bytes);
         return new Constant_Pool_Info(new byte[] {
-                TAG_FLOAT,
+                TAG_DOUBLE,
                 high[0], high[1], high[2], high[3],
                 low[0],  low[1],  low[2],  low[3]
         });

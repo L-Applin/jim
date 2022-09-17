@@ -8,7 +8,7 @@ import ca.applin.jim.ast.Decl.VarDecl;
 import ca.applin.jim.ast.Expr.ArrayLitteral;
 import ca.applin.jim.ast.Expr.Binop;
 import ca.applin.jim.ast.Expr.DeRef;
-import ca.applin.jim.ast.Expr.FloatLitteral;
+import ca.applin.jim.ast.Expr.DoubleLitteral;
 import ca.applin.jim.ast.Expr.FunctionCall;
 import ca.applin.jim.ast.Expr.IntegerLitteral;
 import ca.applin.jim.ast.Expr.PExpr;
@@ -60,7 +60,7 @@ public abstract class TypeVisitor implements AstVisitor {
     }
 
     @Override
-    public void visit(FloatLitteral floatLitteral) {
+    public void visit(DoubleLitteral doubleLitteral) {
 
     }
 

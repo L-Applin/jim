@@ -5,7 +5,7 @@ import static ca.applin.jib.utils.Maybe.nothing;
 
 import ca.applin.jib.utils.Maybe;
 import ca.applin.jim.ast.Type.ArrayType;
-import ca.applin.jim.ast.Type.FloatType;
+import ca.applin.jim.ast.Type.DoubleType;
 import ca.applin.jim.ast.Type.FunctionType;
 import ca.applin.jim.ast.Type.GenericType;
 import ca.applin.jim.ast.Type.IntegerType;
@@ -27,7 +27,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public sealed interface Type extends Expr
-        permits ArrayType, FloatType, FunctionType, GenericType, IntegerType, PType, Primitive,
+        permits ArrayType, DoubleType, FunctionType, GenericType, IntegerType, PType, Primitive,
         SimpleType, StringType, StructType, SumType, TupleType, TypeType, Unit, Unknown, Void
 {
     // for test only???
@@ -35,7 +35,7 @@ public sealed interface Type extends Expr
     /// how will we ahandle primitives in code???
     Primitive STRING = new StringType();
     Primitive INTEGER = new IntegerType();
-    Primitive FLOAT = new FloatType();
+    Primitive DOUBLE = new DoubleType();
 
     default Type type() {
         return TypeType.INSTANCE;
@@ -182,13 +182,13 @@ public sealed interface Type extends Expr
             Type elemType
     ) { }
 
-    sealed interface Primitive extends Type  permits StringType, IntegerType, FloatType {
+    sealed interface Primitive extends Type  permits StringType, IntegerType, DoubleType {
         String name();
         static Maybe<Type> fromString(String str) {
             return switch (str) {
                 case "String" -> just(STRING);
                 case "Int" -> just(INTEGER);
-                case "Float" -> just(FLOAT);
+                case "Float" -> just(DOUBLE);
                 default -> nothing();
             };
         }
@@ -202,7 +202,7 @@ public sealed interface Type extends Expr
         public void visit(AstVisitor astVisitor) { astVisitor.visit(this); }
         public String name() { return "Int"; }
     }
-    record FloatType() implements Primitive, Type {
+    record DoubleType() implements Primitive, Type {
         public void visit(AstVisitor astVisitor) { astVisitor.visit(this); }
         public String name() { return "Float"; }
     }
