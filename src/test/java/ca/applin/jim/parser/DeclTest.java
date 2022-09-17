@@ -11,6 +11,7 @@ import ca.applin.jib.utils.Maybe;
 import ca.applin.jim.ast.Decl;
 import ca.applin.jim.ast.Decl.TypeDecl;
 import ca.applin.jim.ast.Decl.VarDecl;
+import ca.applin.jim.ast.Type;
 import ca.applin.jim.ast.Type.StructElem;
 import ca.applin.jim.ast.Type.StructType;
 import ca.applin.jim.ast.Type.SumType;
@@ -47,10 +48,10 @@ public class DeclTest {
         public Stream<? extends Arguments> provideArguments(ExtensionContext context) {
             return Stream.of(
                     arguments("foo :: Type = (Int, String) ;",
-                            new TypeDecl(testTok("foo"), emptyList(), tuple(INT_TYPE, STRING_TYPE))),
+                            new TypeDecl(testTok("foo"), emptyList(), tuple(Type.INTEGER, Type.STRING))),
                     arguments("parser A :: Type = String -> (Maybe A, String) ;",
                             new TypeDecl(testTok("parser"), List.of("A"),
-                                    fun(STRING_TYPE, tuple(maybe("A"), STRING_TYPE)))),
+                                    fun(Type.STRING, tuple(maybe("A"), Type.STRING)))),
                     arguments("fun A B :: Type = A -> B ;",
                         new TypeDecl(testTok("fun"), List.of("A", "B"),
                                 fun(type("A"), type("B")))),
@@ -65,8 +66,8 @@ public class DeclTest {
                     // clumsy to have to specify the line nomber of the token...
                     arguments("Pair :: Type = { first: Int; second: String; }",
                             new TypeDecl(testTok("Pair"), emptyList(), new StructType(
-                                Map.of("first", new StructElem(testTok("first", 0, 17), false, INT_TYPE),
-                                        "second", new StructElem(testTok("second", 0, 29), false, STRING_TYPE))))
+                                Map.of("first", new StructElem(testTok("first", 0, 17), false, Type.INTEGER),
+                                        "second", new StructElem(testTok("second", 0, 29), false, Type.STRING))))
                     ),
                     arguments("Pair A B :: Type = { first: A; second: B; }",
                             new TypeDecl(testTok("Pair"), List.of("A", "B"), new StructType(
@@ -85,9 +86,9 @@ public class DeclTest {
                             new StructType(Map.of("a", new StructElem(testTok("a", 0, 16), false, type("A")))))),
 
                     // variabel decl
-                    arguments("my_var :: Int = 42 ;", new VarDecl(testTok("my_var", 0, 0), true, just(INT_TYPE), litteral(42))),
+                    arguments("my_var :: Int = 42 ;", new VarDecl(testTok("my_var", 0, 0), true, just(Type.INTEGER), litteral(42))),
                     arguments("my_var :: Maybe Int = 42 ;", new VarDecl(testTok("my_var", 0, 0), true,
-                            just(generic("Maybe", INT_TYPE)),
+                            just(generic("Maybe", Type.INTEGER)),
                             litteral(42)))
             );
         }

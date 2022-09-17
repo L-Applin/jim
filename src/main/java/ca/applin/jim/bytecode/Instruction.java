@@ -36,8 +36,12 @@ public class Instruction {
     // Push long or double from run-time constant pool (wide index)
     public static final byte ldc2_w        = 0x14;
 
-    public static final byte iadd          =  0x60;
+    public static final byte iadd          = 0x60;
+
+    // Multiply int
+    public static final byte imul          = 0x68;
     public static final byte ireturn       = (byte) 0xAC;
+
     public static final byte return_void   = (byte) 0xb1;
 
     // Get static field from class
@@ -99,6 +103,7 @@ public class Instruction {
     }
 
     public static Instruction iadd() { return new Instruction(iadd, (short) -1); }
+    public static Instruction imul() { return new Instruction(imul, (short) -1); }
 
     public static Instruction ireturn() { return new Instruction(ireturn, (short) -1); }
 

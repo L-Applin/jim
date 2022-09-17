@@ -13,19 +13,31 @@ Programming langage project to have fun explorating different concept related to
 ## Development milestones
 - [x] hello world
 - [ ] local variables
+- [ ] math expressions
 - [ ] all control flow:
   - [ ] for
   - [ ] if
   - [ ] case
+- [ ] bool expressions
 - [ ] function call
 - [ ] type definition
   - [ ] type alise
   - [ ] struct types
   - [ ] sum types
+- [ ] type checking.......
+  - [ ] type infer
+- [ ] constant folding
+- [ ] imports/includes
 - [ ] type class and implementation
 - [ ] self-hosted??????
+- [ ] debug infos?
+- [ ] maven compiler plugin
+- [ ] compiler executable
 
 ... and much more
+
+## Known todos
+- [ ] Fix operator precedence
 
 ## Examples
 Working `Hello World!` in `src/test/resources/Simple.jim`:

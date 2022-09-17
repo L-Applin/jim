@@ -37,8 +37,8 @@ class TypeParserTest {
             return Stream.of(
                     // Simple types
                     arguments("A", type("A")),
-                    arguments("Int", type("Int")),
-                    arguments("String", type("String")),
+                    arguments("Int", Type.INTEGER),
+                    arguments("String", Type.STRING),
                     arguments("List", type("List")),
 
                     // Generic
@@ -63,26 +63,26 @@ class TypeParserTest {
                             generic("Cons", type("A"), generic("List", type("A")))),
 
                     // Tuples
-                    arguments("(String)", STRING_TYPE),
-                    arguments("(String, Int)", tuple(STRING_TYPE, INT_TYPE)),
+                    arguments("(String)", Type.STRING),
+                    arguments("(String, Int)", tuple(Type.STRING, Type.INTEGER)),
                     arguments("(F A, F B)", tuple(
                             generic("F", type("A")),
                             generic("F", type("B")))),
                     arguments("(String, Int, Maybe A)", tuple(
-                            STRING_TYPE,
-                            INT_TYPE,
+                            Type.STRING,
+                            Type.INTEGER,
                             generic("Maybe", type("A"))
                     )),
                     arguments("((String, Int), (Maybe A, String), (Error Val Msg, Int, String))",
                         tuple(
-                            tuple(STRING_TYPE, INT_TYPE),
+                            tuple(Type.STRING, Type.INTEGER),
                             tuple(
                                 generic("Maybe", type("A")),
-                                STRING_TYPE),
+                                Type.STRING),
                             tuple(
                                 generic("Error", type("Val"), type("Msg")),
-                                INT_TYPE,
-                                STRING_TYPE))
+                                Type.INTEGER,
+                                Type.STRING))
                     ),
 
                     // Function

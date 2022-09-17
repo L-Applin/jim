@@ -1,14 +1,15 @@
 main :: [String] -> Void = args -> {
-  print("Hello, ");
-  print("Sailor!");
-  print(0);
-  print(1);
-  print(0.33);
-  print(-0.1);
-  print(2);
-  print(-1);
-  print(-2);
-  print(42069);
+  print("Hello, ")
+  print("Sailor!")
+  print(0)
+  print(1)
+  print(0.33)
+  print(-0.1)
+  print(2)
+  print(-1)
+  print(-2)
+  print(42069)
   print("pi: ")
-  print(3.14);
+  print(3.14)
+  print(1 + (2 * 3) + 4)
 }

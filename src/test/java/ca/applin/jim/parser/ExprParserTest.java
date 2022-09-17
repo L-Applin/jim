@@ -101,7 +101,7 @@ class ExprParserTest {
                 ),
                 arguments("[]", array(Type.UNKNOWN, new ArrayList<>())),
                 arguments("[1 + 2, 3, 4, 5]",
-                        array(Type.UNKNOWN, List.of(binop(PLUS, litteral(1), litteral(2)), litteral(3), litteral(4), litteral(5)))
+                        array(Type.INTEGER, List.of(binop(PLUS, litteral(1), litteral(2)), litteral(3), litteral(4), litteral(5)))
                 ),
                 arguments("[\"one\", \"two\", \"three\"]",
                     array(Type.STRING, Stream.of("one", "two", "three").map(s -> (Expr) new StringLitteral(s)).toList())),

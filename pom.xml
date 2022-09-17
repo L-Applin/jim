@@ -37,6 +37,7 @@
           <skipAfterFailureCount>1</skipAfterFailureCount>
           <threadCount>1</threadCount>
           <useUnlimitedThreads>false</useUnlimitedThreads>
+          <argLine>--enable-preview</argLine>
         </configuration>
       </plugin>
     </plugins>

@@ -17,6 +17,8 @@ import static ca.applin.jim.bytecode.Instruction.aload_0;
 import static ca.applin.jim.bytecode.Instruction.bipush;
 import static ca.applin.jim.bytecode.Instruction.bytecode;
 import static ca.applin.jim.bytecode.Instruction.getstatic;
+import static ca.applin.jim.bytecode.Instruction.iadd;
+import static ca.applin.jim.bytecode.Instruction.imul;
 import static ca.applin.jim.bytecode.Instruction.invokespecial;
 import static ca.applin.jim.bytecode.Instruction.invokevirtual;
 import static ca.applin.jim.bytecode.Instruction.ldc;
@@ -28,16 +30,19 @@ import ca.applin.jim.ast.Ast;
 import ca.applin.jim.ast.AstVisitorAdapter;
 import ca.applin.jim.ast.Decl.FunctionDecl;
 import ca.applin.jim.ast.Expr;
+import ca.applin.jim.ast.Expr.Binop;
 import ca.applin.jim.ast.Expr.DoubleLitteral;
 import ca.applin.jim.ast.Expr.IntegerLitteral;
 import ca.applin.jim.ast.Expr.ReturnExpr;
 import ca.applin.jim.ast.Expr.StringLitteral;
 import ca.applin.jim.ast.Intrinsic.Print;
+import ca.applin.jim.ast.Operator;
 import ca.applin.jim.ast.Type;
 import ca.applin.jim.ast.Type.DoubleType;
 import ca.applin.jim.ast.Type.FunctionType;
 import ca.applin.jim.ast.Type.IntegerType;
 import ca.applin.jim.ast.Type.StringType;
+import ca.applin.jim.ast.Type.Unknown;
 import ca.applin.jim.ast.Type.Void;
 import ca.applin.jim.bytecode.Attribute_Info.Exception_Table;
 import ca.applin.jim.bytecode.Class_File.Flag;
@@ -154,8 +159,8 @@ public class ClassBytecodeGenerator extends AstVisitorAdapter {
         Class_File test_class = new Class_File(
                 JAVA_11_CLASS_MINOR_VERION,
                 JAVA_11_CLASS_MAJOR_VERION,
+                (short) (constantPoolInfos.size() + 1 + index_offset), // stupid constant pool...
                 constantPoolInfos.toArray(new Constant_Pool_Info[0]),
-                index_offset,
                 (short) (Flag.ACC_PUBLIC | Flag.ACC_SUPER),
                 this_class,
                 (short) 2,
@@ -263,6 +268,53 @@ public class ClassBytecodeGenerator extends AstVisitorAdapter {
         short index = addDoubleToConstantPool(doubleLitteral.value());
         byte[] index_bytes = ByteUtils.to_bytes_big(index);
         add_instruction(ldc2_w(index_bytes[0], index_bytes[1]));
+    }
+
+    @Override
+    public void visit(Binop binop) {
+        binop.left().visit(this);
+        binop.right().visit(this);
+        switch (binop.op()) {
+            case PLUS -> {
+                switch (binop.type()) {
+                    case IntegerType __-> add_instruction(iadd());
+                    case Unknown __ -> todo("report unknown type for " + binop);
+                    default -> todo("Plus for type " + binop.type());
+                }
+            }
+            case MINUS -> todo();
+            case TIMES -> {
+                switch (binop.type()) {
+                    case IntegerType __ -> add_instruction(imul());
+                    case Unknown __ -> todo("report unknown type for " + binop);
+                    default -> todo("Plus for type " + binop.type());
+                }
+            }
+            case DIV -> {
+            }
+            case MOD -> {
+            }
+            case LOGICAL_OR -> {
+            }
+            case LOGICAL_AND -> {
+            }
+            case LOGICAL_XOR -> {
+            }
+            case EQ -> {
+            }
+            case NEQ -> {
+            }
+            case BIT_SHIFT_LEFT -> {
+            }
+            case BIT_SHIFT_RIGHT -> {
+            }
+            case UNARY_PLUS -> {
+            }
+            case UNARY_MINUS -> {
+            }
+            case ACCESSOR -> {
+            }
+        }
     }
 
     private short addUtf8ToConstantPool(String typeDescr) {

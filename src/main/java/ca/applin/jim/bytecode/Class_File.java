@@ -83,8 +83,8 @@ public class Class_File {
     public Class_File(
             short minor_version,
             short major_version,
+            short constant_pool_count,
             Constant_Pool_Info[] constant_pool,
-            short offset,
             short access_flag,
             short this_class,
             short super_class,
@@ -95,7 +95,7 @@ public class Class_File {
         this.magic_bytes = JAVA_MAGIC_BYTES;
         this.minor_version = minor_version;
         this.major_version = major_version;
-        this.constant_pool_count = (short) (constant_pool.length + 1 + offset);
+        this.constant_pool_count = constant_pool_count;
         this.constant_pool = constant_pool;
         this.access_flag = access_flag;
         this.this_class = this_class;
@@ -108,20 +108,6 @@ public class Class_File {
         this.methods = methods;
         this.attributes_count = (short) attributes.length;
         this.attributes = attributes;
-    }
-
-    public Class_File(
-            short minor_version,
-            short major_version,
-            Constant_Pool_Info[] constant_pool,
-            short access_flag,
-            short this_class,
-            short super_class,
-            Interface[] interfaces,
-            Field[] fields,
-            Method[] methods,
-            Attribute_Info[] attributes) {
-        this(minor_version, major_version, constant_pool, (short) 0, access_flag, this_class, super_class, interfaces, fields, methods, attributes);
     }
 
     public byte[] get_content() {

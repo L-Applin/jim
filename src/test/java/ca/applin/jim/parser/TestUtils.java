@@ -24,8 +24,6 @@ import java.util.stream.Stream;
 
 public class TestUtils {
 
-    public static SimpleType STRING_TYPE = new SimpleType("String");
-    public static SimpleType INT_TYPE = new SimpleType("Int");
     public static Location TEST_LOCATION = new Location("<from string>", 0, 0);
 
     static Type maybe(String s) {

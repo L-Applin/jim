@@ -63,7 +63,7 @@ public interface Expr extends Ast {
 
     record Binop(Expr left, Expr right, Operator op) implements Expr {
         public Type type() {
-            return left().equals(right()) ? left().type() : Type.UNKNOWN;
+            return left().type().equals(right().type()) ? left().type() : Type.UNKNOWN;
         }
 
         public String toString() {

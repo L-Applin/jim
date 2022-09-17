@@ -71,7 +71,7 @@ class BytecodeTest {
         // <init> required method
         byte[] init_code = bytecode(
                 aload_0(), // load `this`
-                invokevirtual((byte) 0x00, (byte) 0x01, (short) 0),
+                invokespecial((byte) 0x00, (byte) 0x01, (short) 0),
                 return_void()
         );
         Attribute_Info[] init_code_attr = new Attribute_Info[] {
@@ -82,6 +82,7 @@ class BytecodeTest {
         Class_File test_class = new Class_File(
                 JAVA_11_CLASS_MINOR_VERION,
                 JAVA_11_CLASS_MAJOR_VERION,
+                (short) (infos.length + 1),
                 infos,
                 (short) (Flag.ACC_PUBLIC | Flag.ACC_SUPER),
                 (short) 7,

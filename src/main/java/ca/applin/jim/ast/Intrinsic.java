@@ -24,7 +24,7 @@ public interface Intrinsic extends Ast {
             if (args.size() == 1) {
                 return new Print(just(args.get(0)));
             }
-            todo("report error intrinsic PRINT requires 1 arguments but got " + args.size());
+            todo("report error intrinsic PRINT requires 0 or 1 arguments but got " + args.size());
         }
         throw new IllegalArgumentException("Unknown intrinsic '" + atom.value() + "'");
     }
