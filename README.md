@@ -13,6 +13,12 @@ Haskell type system, Kotlin/Haskell syntax, Java performance, semantics and ecos
   - [ ] for
   - [ ] if
   - [ ] case
+- [ ] function call
+- [ ] type definition
+  - [ ] type alise
+  = [ ] struct types
+  - [ ] sum types
+- [ ] type class and implementation
 
 ... and much more
 
