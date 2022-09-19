@@ -179,19 +179,19 @@ public class Instruction {
         return new Instruction(new byte[] {ldc2_w, indexbyte1, indexbyte2}, (short) 2);
     }
 
-    public static Instruction iadd() { return new Instruction(iadd, (short) -1); }
-    public static Instruction isub() { return new Instruction(isub, (short) -1); }
-    public static Instruction imul() { return new Instruction(imul, (short) -1); }
-    public static Instruction idiv() { return new Instruction(idiv, (short) -1); }
-    public static Instruction ireturn() { return new Instruction(ireturn, (short) -1); }
+    public static Instruction iadd() { return new Instruction(iadd, (short) -2); }
+    public static Instruction isub() { return new Instruction(isub, (short) -2); }
+    public static Instruction imul() { return new Instruction(imul, (short) -2); }
+    public static Instruction idiv() { return new Instruction(idiv, (short) -2); }
 
-    public static Instruction dadd() { return new Instruction(dadd, (short) -1); }
-    public static Instruction dsub() { return new Instruction(dsub, (short) -1); }
-    public static Instruction dmul() { return new Instruction(dmul, (short) -1); }
-    public static Instruction ddiv() { return new Instruction(ddiv, (short) -1); }
+    public static Instruction dadd() { return new Instruction(dadd, (short) -2); }
+    public static Instruction dsub() { return new Instruction(dsub, (short) -2); }
+    public static Instruction dmul() { return new Instruction(dmul, (short) -2); }
+    public static Instruction ddiv() { return new Instruction(ddiv, (short) -2); }
 
     public static Instruction i2d() { return new Instruction(i2d, (short) 1); }
 
+    public static Instruction ireturn() { return new Instruction(ireturn, (short) -1); }
     public static Instruction return_void() { return new Instruction(return_void, (short) 0); }
 
     public static Instruction invokespecial(byte indexbyte1, byte indexbyte2, short arg_size) {

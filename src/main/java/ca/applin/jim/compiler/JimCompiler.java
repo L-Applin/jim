@@ -5,7 +5,7 @@ import static ca.applin.jim.parser.ParserUtils.Logger.log;
 import ca.applin.jib.utils.Maybe;
 import ca.applin.jib.utils.Pair;
 import ca.applin.jim.ast.Ast;
-import ca.applin.jim.bytecode.ClassBytecodeGenerator;
+import ca.applin.jim.bytecode.gen.ClassBytecodeGenerator;
 import ca.applin.jim.lexer.Lexer;
 import ca.applin.jim.parser.JimParser;
 import java.io.FileOutputStream;

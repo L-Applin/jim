@@ -66,6 +66,7 @@ public interface Expr extends Ast {
 
     record Unop(Expr expr, Operator operator, Type type) implements Expr {
         public void visit(AstVisitor astVisitor) { astVisitor.visit(this);}
+        public Type findType(Map<Atom, Type> context) { return expr.findType(context); }
     }
 
     record Binop(Expr left, Expr right, Operator op) implements Expr {
@@ -106,8 +107,8 @@ public interface Expr extends Ast {
     }
 
     record PExpr(Expr inner) implements Expr {
-        public Type type() { return inner().type(); }
-        public Expr unpack() { return inner(); }
+        public Type type() { return inner.type(); }
+        public Expr unpack() { return inner; }
         public void visit(AstVisitor astVisitor) { astVisitor.visit(this); }
     }
 

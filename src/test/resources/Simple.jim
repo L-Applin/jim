@@ -27,8 +27,8 @@ main :: [String] -> Void = args -> {
   print(3.0 / 15);
 
   // var decl
-  my_var   : Int = 42;
-  my_var_2 : Int = 69;
+  my_var   : Float = 42.5;
+  my_var_2 : Float = 68.5;
   print(my_var + my_var_2);
   my_var_3 : Int = 20;
   my_var_4 : Int = 22;
