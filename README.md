@@ -1,6 +1,6 @@
 # Jim (working title)
 
-Programming langage project to have fun explorating different concept related to type system and functional programming. Compiled to JVM Bytecode.
+Programming langage project to have fun exploring different concept related to type system and functional programming. Compiled to JVM Bytecode.
 
 **Everything subject to change.**
 
