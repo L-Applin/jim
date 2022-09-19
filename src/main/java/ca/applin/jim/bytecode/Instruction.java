@@ -5,54 +5,71 @@ import java.util.List;
 
 public class Instruction {
 
-    // opcodes
+    // ============================================================
+    // opcodes byte value
 
     // Push item from run-time constant pool
-    public static final byte ldc            = (byte) 0x12;
+    public static final byte ldc            = 0x12;
 
     // aload index, aload_<n>: Load reference from local variable
-    public static final byte aload         = 0x19,
-                             aload_0       = 0x2a,
-                             aload_1       = 0x2b,
-                             aload_2       = 0x2c,
-                             aload_3       = 0x2d;
+    public static final byte aload          = 0x19,
+                             aload_0        = 0x2a,
+                             aload_1        = 0x2b,
+                             aload_2        = 0x2c,
+                             aload_3        = 0x2d;
 
-    // aaload: Load reference from array
-    public static final byte aaload        = 0x32;
+    // Load int from local variable.
+    public static final byte iload          = 0x15,
+                             iload_0        = 0x1a,
+                             iload_1        = 0x1b,
+                             iload_2        = 0x1c,
+                             iload_3        = 0x1d;
 
-    // aastore: Store into reference array
-    public static final byte aastore       = 0x53;
+    // Store int into local variable
+    public static final byte istore         = 0x36,
+                             istore_0       = 0x3b,
+                             istore_1       = 0x3c,
+                             istore_2       = 0x3d,
+                             istore_3       = 0x3e;
 
-    // iload index, iload_<n>: Load int from local variable.
-    public static final byte iload         = 0x15,
-                             iload_0       = 0x1a,
-                             iload_1       = 0x1b,
-                             iload_2       = 0x1c,
-                             iload_3       = 0x1d;
+    // Load double from local variable.
+    public static final byte dload          = 0x18,
+                             dload_0        = 0x26,
+                             dload_1        = 0x27,
+                             dload_2        = 0x28,
+                             dload_3        = 0x29;
+
+    // Store double into local variable
+    public static final byte dstore         = 0x39,
+                             dstore_0       = 0x47,
+                             dstore_1       = 0x48,
+                             dstore_2       = 0x49,
+                             dstore_3       = 0x4a;
 
     // Add, Subtract, multiply, divides etc int
-    public static final byte iadd          = 0x60,
-                             isub          = 0x64,
-                             imul          = 0x68,
-                             idiv          = 0x6c,
-                             irem          = 0x70;
+    public static final byte iadd           = 0x60,
+                             isub           = 0x64,
+                             imul           = 0x68,
+                             idiv           = 0x6c,
+                             irem           = 0x70;
 
-    public static final byte dadd          = 0x63,
-                             dsub          = 0x67,
-                             dmul          = 0x6b,
-                             ddiv          = 0x6f;
+    // Add, Subtract, multiply, divides etc double
+    public static final byte dadd           = 0x63,
+                             dsub           = 0x67,
+                             dmul           = 0x6b,
+                             ddiv           = 0x6f;
 
-    // Convert int to double
-    public static final byte i2d           = (byte) 0x87;
 
     // Push byte to operand stack
-    public static final byte bipush        = 0x10;
+    public static final byte bipush         = 0x10;
 
     // Push long or double from run-time constant pool (wide index)
-    public static final byte ldc2_w        = 0x14;
+    public static final byte ldc2_w         = 0x14;
 
+    // Convert int to double
+    public static final byte i2d            = (byte) 0x87;
 
-    public static final byte ireturn        = (byte) 0xAC;
+    public static final byte ireturn        = (byte) 0xac;
 
     public static final byte return_void    = (byte) 0xb1;
 
@@ -61,6 +78,11 @@ public class Instruction {
     public static final byte invokesvirtual = (byte) 0xb6;
     public static final byte invokespecial  = (byte) 0xb7;
 
+    // aaload: Load reference from array
+    public static final byte aaload         = 0x32;
+
+    // aastore: Store into reference array
+    public static final byte aastore        = 0x53;
 
     public static byte[] bytecode(Instruction ...instructions) {
         return bytecode(Arrays.asList(instructions));
@@ -96,7 +118,7 @@ public class Instruction {
         };
     }
 
-    public static Instruction iload_0() { return new Instruction(iload_0, (short) 1);}
+    public static Instruction iload_0() { return new Instruction(iload_0, (short) 1); }
     public static Instruction iload_1() { return new Instruction(iload_1, (short) 1); }
     public static Instruction iload_2() { return new Instruction(iload_2, (short) 1); }
     public static Instruction iload_3() { return new Instruction(iload_3, (short) 1); }
@@ -109,6 +131,49 @@ public class Instruction {
             default -> new Instruction(new byte[]{ iload, n }, (short) 1);
         };
     }
+
+    public static Instruction dload_0() { return new Instruction(dload_0, (short) 1); }
+    public static Instruction dload_1() { return new Instruction(dload_1, (short) 1); }
+    public static Instruction dload_2() { return new Instruction(dload_2, (short) 1); }
+    public static Instruction dload_3() { return new Instruction(dload_3, (short) 1); }
+    public static Instruction dload(byte n) {
+        return switch (n) {
+            case 0 -> dload_0();
+            case 1 -> dload_1();
+            case 2 -> dload_2();
+            case 3 -> dload_3();
+            default -> new Instruction(new byte[]{ dload, n }, (short) 1);
+        };
+    }
+
+    public static Instruction istore_0() { return new Instruction(istore_0, (short) -1); }
+    public static Instruction istore_1() { return new Instruction(istore_1, (short) -1); }
+    public static Instruction istore_2() { return new Instruction(istore_2, (short) -1); }
+    public static Instruction istore_3() { return new Instruction(istore_3, (short) -1); }
+    public static Instruction istore(byte n) {
+        return switch (n) {
+            case 0 -> istore_0();
+            case 1 -> istore_1();
+            case 2 -> istore_2();
+            case 3 -> istore_3();
+            default -> new Instruction(new byte[]{ istore, n }, (short) -1);
+        };
+    }
+
+    public static Instruction dstore_0() { return new Instruction(dstore_0, (short) -1); }
+    public static Instruction dstore_1() { return new Instruction(dstore_1, (short) -1); }
+    public static Instruction dstore_2() { return new Instruction(dstore_2, (short) -1); }
+    public static Instruction dstore_3() { return new Instruction(dstore_3, (short) -1); }
+    public static Instruction dstore(byte n) {
+        return switch (n) {
+            case 0 -> dstore_0();
+            case 1 -> dstore_1();
+            case 2 -> dstore_2();
+            case 3 -> dstore_3();
+            default -> new Instruction(new byte[]{ dstore, n }, (short) -1);
+        };
+    }
+
 
     public static Instruction ldc2_w(byte indexbyte1, byte indexbyte2) {
         return new Instruction(new byte[] {ldc2_w, indexbyte1, indexbyte2}, (short) 2);
@@ -148,6 +213,8 @@ public class Instruction {
     public static Instruction bipush(byte value) {
         return new Instruction(new byte[] { bipush, value }, (short) 1);
     }
+
+    // ===========================================================================================
 
     public byte[] bytes;
     public short stack_value_added;

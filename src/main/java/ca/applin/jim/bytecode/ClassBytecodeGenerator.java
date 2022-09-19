@@ -18,15 +18,19 @@ import static ca.applin.jim.bytecode.Instruction.bipush;
 import static ca.applin.jim.bytecode.Instruction.bytecode;
 import static ca.applin.jim.bytecode.Instruction.dadd;
 import static ca.applin.jim.bytecode.Instruction.ddiv;
+import static ca.applin.jim.bytecode.Instruction.dload;
 import static ca.applin.jim.bytecode.Instruction.dmul;
+import static ca.applin.jim.bytecode.Instruction.dstore;
 import static ca.applin.jim.bytecode.Instruction.dsub;
 import static ca.applin.jim.bytecode.Instruction.getstatic;
 import static ca.applin.jim.bytecode.Instruction.i2d;
 import static ca.applin.jim.bytecode.Instruction.iadd;
 import static ca.applin.jim.bytecode.Instruction.idiv;
+import static ca.applin.jim.bytecode.Instruction.iload;
 import static ca.applin.jim.bytecode.Instruction.imul;
 import static ca.applin.jim.bytecode.Instruction.invokespecial;
 import static ca.applin.jim.bytecode.Instruction.invokevirtual;
+import static ca.applin.jim.bytecode.Instruction.istore;
 import static ca.applin.jim.bytecode.Instruction.isub;
 import static ca.applin.jim.bytecode.Instruction.ldc;
 import static ca.applin.jim.bytecode.Instruction.ldc2_w;
@@ -34,16 +38,18 @@ import static ca.applin.jim.bytecode.Instruction.return_void;
 
 import ca.applin.jib.utils.Just;
 import ca.applin.jim.ast.Ast;
+import ca.applin.jim.ast.Ast.Atom;
 import ca.applin.jim.ast.AstVisitorAdapter;
 import ca.applin.jim.ast.Decl.FunctionDecl;
+import ca.applin.jim.ast.Decl.VarDecl;
 import ca.applin.jim.ast.Expr;
 import ca.applin.jim.ast.Expr.Binop;
 import ca.applin.jim.ast.Expr.DoubleLitteral;
 import ca.applin.jim.ast.Expr.IntegerLitteral;
+import ca.applin.jim.ast.Expr.VarRef;
 import ca.applin.jim.ast.Expr.ReturnExpr;
 import ca.applin.jim.ast.Expr.StringLitteral;
 import ca.applin.jim.ast.Intrinsic.Print;
-import ca.applin.jim.ast.Operator;
 import ca.applin.jim.ast.Type;
 import ca.applin.jim.ast.Type.DoubleType;
 import ca.applin.jim.ast.Type.FunctionType;
@@ -53,6 +59,7 @@ import ca.applin.jim.ast.Type.Unknown;
 import ca.applin.jim.ast.Type.Void;
 import ca.applin.jim.bytecode.Attribute_Info.Exception_Table;
 import ca.applin.jim.bytecode.Class_File.Flag;
+import ca.applin.jim.compiler.CompilerException;
 import ca.applin.jim.parser.ParserUtils.ParserException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -118,7 +125,7 @@ public class ClassBytecodeGenerator extends AstVisitorAdapter {
     public static final Constant_Pool_Info UTF8_CODE_CONSTANT_POOL_INFO = utf8_info("Code");
     public static final short UTF8_CODE_CONSTANT_POOL_INFO_INDEX = 7;
 
-    static List<Constant_Pool_Info> SUPER_OBJECT = List.of(
+    private static final List<Constant_Pool_Info> SUPER_OBJECT = List.of(
             methodRef_info((short) 2, (short) 3),
             class_info((short) 4),
             nameAndType_info((short) 5, (short) 6),
@@ -134,12 +141,26 @@ public class ClassBytecodeGenerator extends AstVisitorAdapter {
         this.file = file;
     }
 
+    // Field ref to its constant pool index
     private final Map<FieldRef, Integer> fieldRefs  = new HashMap<>();
+
+    // Method ref to its constan pool index
     private final Map<MethodRef, Integer> methodRefs = new HashMap<>();
+
+    // Local variable reference to their index in the local variable array
+    private final Map<Atom, Short> localVars = new HashMap<>();
+
+    // HACK!!! replace by actuall type check
+    private final Map<Atom, Type> types = new HashMap<>();
+
     private final Map<FunctionDecl, List<Instruction>> instructions = new HashMap<>();
     private final Stack<FunctionDecl> funcDecls = new Stack<>();
 
-    private short max_stack = 0, current_stack = 0, max_locals = 0, current_locals = 0, index_offset = 0;
+    private short max_stack = 0,
+                  current_stack = 0,
+                  max_locals = 0,
+                  current_locals = 0,
+                  index_offset = 0;
 
     private final TypeDescriptorMapper typeDescriptorMapper = new TypeDescriptorMapper();
     private final List<Constant_Pool_Info> constantPoolInfos = new ArrayList<>() {{
@@ -147,22 +168,17 @@ public class ClassBytecodeGenerator extends AstVisitorAdapter {
         add(UTF8_CODE_CONSTANT_POOL_INFO); // index #7
     }};
 
-    private List<Method> methods = new ArrayList<>();
+    private final List<Method> methods = new ArrayList<>();
 
     public byte[] generate(Ast ast) {
-        byte[] init_code = bytecode(
-                aload_0(), // load `this`
-                invokespecial((byte) 0x00, (byte) 0x01, (short) 0), // call Object.<init>
-                return_void()
-        );
-        Attribute_Info[] init_code_attr = new Attribute_Info[] {
-                code(UTF8_CODE_CONSTANT_POOL_INFO_INDEX, (short) 1, (short) 1, init_code, new Exception_Table[0], new Attribute_Info[0])
-        };
-        Method init_method = new Method(Method.FLAG_ACC_PUBLIC, 5, 6, init_code_attr.length, init_code_attr);
-        methods.add(init_method);
+        init_class_bytecode();
+
+        // generate bytecode for the whole file
         ast.visit(this);
+
         constantPoolInfos.add(class_info(addUtf8ToConstantPool(_package + "/" + file)));
         short this_class = current_index();
+
         Class_File test_class = new Class_File(
                 JAVA_11_CLASS_MINOR_VERION,
                 JAVA_11_CLASS_MAJOR_VERION,
@@ -179,12 +195,25 @@ public class ClassBytecodeGenerator extends AstVisitorAdapter {
         return test_class.get_content();
     }
 
+    // adds super ref (object for now...) and <init> method
+    private void init_class_bytecode() {
+        byte[] init_code = bytecode(
+                aload_0(), // load `this`
+                invokespecial((byte) 0x00, (byte) 0x01, (short) 0), // call Object.<init>
+                return_void()
+        );
+        Attribute_Info[] init_code_attr = new Attribute_Info[] {
+                code(UTF8_CODE_CONSTANT_POOL_INFO_INDEX, (short) 1, (short) 1, init_code, new Exception_Table[0], new Attribute_Info[0])
+        };
+        Method init_method = new Method(Method.FLAG_ACC_PUBLIC, 5, 6, init_code_attr.length, init_code_attr);
+        methods.add(init_method);
+    }
+
     @Override
     public void visit(FunctionDecl funDecl) {
-        max_stack = 0;
-        max_locals = (short) (funDecl.args().size() + 1);
-        funcDecls.push(funDecl);
-        instructions.put(funDecl, new ArrayList<>());
+
+        initFuncDecl(funDecl);
+
         Type type = funDecl.type()
                 .orElseThrow(new ParserException("Unknown type: " + funDecl.type()));
         String type_descr = typeDescriptorMapper.typeToDescriptor(type);
@@ -218,10 +247,26 @@ public class ClassBytecodeGenerator extends AstVisitorAdapter {
                 new Attribute_Info[]{ code_info }
         );
         methods.add(method);
+        cleanUpFuncDecl();
+    }
+
+    private void initFuncDecl(FunctionDecl funDecl) {
+        max_stack = 0;
+        max_locals = (short) funDecl.args().size();
+        funcDecls.push(funDecl);
+        instructions.put(funDecl, new ArrayList<>());
+        int curr_size = localVars.size();
+        for (int i = 0; i < funDecl.args().size(); i++) {
+            localVars.put(funDecl.args().get(i), (short) (i + curr_size));
+        }
+    }
+
+    private void cleanUpFuncDecl() {
         funcDecls.pop();
         current_stack = 0;
         max_stack = 0;
         max_locals = 0;
+        localVars.clear();
     }
 
     @Override
@@ -238,10 +283,11 @@ public class ClassBytecodeGenerator extends AstVisitorAdapter {
         int method_ref;
         if (print.arg() instanceof Just<Expr> jExpr) {
             Expr expr = jExpr.elem();
-            method_ref = switch (expr.type()) {
+            method_ref = switch (expr.findType(types)) {
                 case StringType  s -> methodRef(PRINT_LN_STR_METHOD_REF);
                 case IntegerType i -> methodRef(PRINT_LN_INT_METHOD_REF);
                 case DoubleType  d -> methodRef(PRINT_LN_DOUBLE_METHOD_REF);
+                case Unknown __    -> todo("Unknown type for expr: " + expr);
                 default -> todo("other types for println (got '%s')".formatted(expr.type()));
              };
              expr.visit(this); // will put the instruction that puts the value on the stack
@@ -279,11 +325,11 @@ public class ClassBytecodeGenerator extends AstVisitorAdapter {
 
     @Override
     public void visit(Binop binop) {
+        final Type binopType = binop.findType(types);
+        final Type leftType = binop.left().findType(types);
+        final Type rightType = binop.right().findType(types);
 
         binop.left().visit(this);
-        final Type binopType = binop.type();
-        final Type leftType = binop.left().type();
-        final Type rightType = binop.right().type();
         if (binopType instanceof DoubleType) {
             if (leftType instanceof IntegerType) {
                 add_instruction(i2d());
@@ -327,7 +373,7 @@ public class ClassBytecodeGenerator extends AstVisitorAdapter {
             }
 
         case DIV -> {
-                switch (binop.type()) {
+                switch (binopType) {
                     case IntegerType __ -> add_instruction(idiv());
                     case DoubleType __-> add_instruction(ddiv());
                     case Unknown __ -> todo("report unknown type for " + binop);
@@ -335,28 +381,58 @@ public class ClassBytecodeGenerator extends AstVisitorAdapter {
                 }
             }
 
-            case MOD -> {
+        case MOD,
+            LOGICAL_OR,
+            LOGICAL_AND,
+            LOGICAL_XOR,
+            EQ,
+            NEQ,
+            BIT_SHIFT_LEFT,
+            BIT_SHIFT_RIGHT,
+            UNARY_PLUS,
+            UNARY_MINUS,
+            ACCESSOR
+                -> todo();
+        }
+    }
+
+    @Override
+    public void visit(VarDecl varDecl) {
+        varDecl.expr().visit(this); // put result of init expr of the operand stack
+        short index = (short) localVars.size();
+        localVars.put(varDecl.name(), index);
+        types.put(varDecl.name(), varDecl.expr().findType(types));
+        if (index > Byte.MAX_VALUE) {
+            todo("!!! MAX VAR SIZE REACHED WITHOUT WIDE !!!");
+        }
+        switch (varDecl.expr().findType(types)) {
+            case IntegerType __ -> add_instruction(istore((byte) index));
+            case DoubleType __  -> add_instruction(dstore((byte) index));
+            case Unknown __      -> todo("report unknown type");
+            default -> todo("push var of type '" + varDecl.expr().type() + "' not yet implemented.");
+        }
+        localVars.put(varDecl.name(), index);
+        max_locals++;
+    }
+
+    @Override
+    public void visit(VarRef varRef) {
+        if (!localVars.containsKey(varRef.ref())) {
+            throw new CompilerException("Variable not found: " + varRef);
+        }
+        short index = localVars.get(varRef.ref());
+        Type type = varRef.type();
+        if (type instanceof Unknown) {
+            type = types.get(varRef.ref());
+            if (type == null) {
+                throw new CompilerException("Could not resolve type of var: " + varRef);
             }
-            case LOGICAL_OR -> {
-            }
-            case LOGICAL_AND -> {
-            }
-            case LOGICAL_XOR -> {
-            }
-            case EQ -> {
-            }
-            case NEQ -> {
-            }
-            case BIT_SHIFT_LEFT -> {
-            }
-            case BIT_SHIFT_RIGHT -> {
-            }
-            case UNARY_PLUS -> {
-            }
-            case UNARY_MINUS -> {
-            }
-            case ACCESSOR -> {
-            }
+        }
+        switch (type) {
+            case IntegerType __ -> add_instruction(iload((byte) index));
+            case DoubleType __  -> add_instruction(dload((byte) index));
+            case Unknown __      -> todo("report unknown type: " + varRef);
+            default -> todo("load var for " + varRef);
         }
     }
 
@@ -431,8 +507,7 @@ public class ClassBytecodeGenerator extends AstVisitorAdapter {
     }
 
     public void add_instruction(Instruction instruction) {
-        FunctionDecl current = funcDecls.peek();
-        List<Instruction> method_instructios = instructions.computeIfAbsent(current, k -> new ArrayList<>());
+        List<Instruction> method_instructios = instructions.computeIfAbsent(funcDecls.peek(), k -> new ArrayList<>());
         method_instructios.add(instruction);
         current_stack += instruction.stack_value_added;
         max_stack = (short) Math.max(max_stack, current_stack);

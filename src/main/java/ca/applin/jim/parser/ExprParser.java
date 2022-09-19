@@ -35,6 +35,7 @@ import ca.applin.jim.ast.Expr.PExpr;
 import ca.applin.jim.ast.Expr.ReturnExpr;
 import ca.applin.jim.ast.Expr.StringLitteral;
 import ca.applin.jim.ast.Expr.Unop;
+import ca.applin.jim.ast.Expr.VarRef;
 import ca.applin.jim.ast.Intrinsic;
 import ca.applin.jim.ast.Operator;
 import ca.applin.jim.ast.Type;
@@ -299,7 +300,7 @@ public class ExprParser implements Parser<Ast> {
         }
 
         // is there anything?
-        return just(new Expr.Ref(new Atom(first.str())));
+        return just(new VarRef(new Atom(first.str())));
 
     }
 

@@ -38,6 +38,7 @@ Programming langage project to have fun explorating different concept related to
 
 ## Known todos
 - [ ] Fix operator precedence
+- [ ] wide instructions (constant pool / local variables)
 
 ## Examples
 Working `Hello World!` in `src/test/resources/Simple.jim`:
@@ -131,3 +132,4 @@ Lisp_List A :: Type = Nil | Cons A (List A)
 - null value??
 - Macro? Rust macros are cool...
 - Code block?
+- Concurrency...

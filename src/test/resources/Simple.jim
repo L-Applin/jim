@@ -1,17 +1,21 @@
 main :: [String] -> Void = args -> {
-  print("Hello, ")
-  print("Sailor!")
-  print(0)
-  print(1)
-  print(0.33)
-  print(-0.1)
-  print(2)
-  print(-1)
-  print(-2)
-  print(42069)
-  print("pi: ")
-  print(3.14)
-  print(2 * 3)
+
+  // print
+  print("Hello, ");
+  print("Sailor!");
+  print(0);
+  print(1);
+  print(0.33);
+  print(-0.1);
+  print(2);
+  print(-1);
+  print(-2);
+  print(42069);
+  print("pi: ");
+  print(3.14);
+
+  // basic expr
+  print(2 * 3);
   print(111 - 42);
   print(15 / 3);
   print(16 / 3);
@@ -21,4 +25,14 @@ main :: [String] -> Void = args -> {
   print(16.9 / 3.0);
   print(15 / 3.0);
   print(3.0 / 15);
+
+  // var decl
+  my_var   : Int = 42;
+  my_var_2 : Int = 69;
+  print(my_var + my_var_2);
+  my_var_3 : Int = 20;
+  my_var_4 : Int = 22;
+  print(my_var_3 + my_var_4);
+  my_var_5 : Int = my_var + my_var_2 + my_var_3 + my_var_4;
+  print(my_var_5);
 }

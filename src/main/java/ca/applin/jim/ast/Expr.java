@@ -7,10 +7,15 @@ import ca.applin.jim.ast.Type.IntegerType;
 import ca.applin.jim.lexer.LexerToken.Location;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public interface Expr extends Ast {
 
     Type type();
+
+    default Type findType(Map<Atom, Type> context) {
+        return type();
+    }
 
     default Expr unpack() {
         return this;
@@ -64,6 +69,22 @@ public interface Expr extends Ast {
     }
 
     record Binop(Expr left, Expr right, Operator op) implements Expr {
+
+        @Override
+        public Type findType(Map<Atom, Type> context) {
+            final Type rightType = right.findType(context);
+            final Type leftType = left.findType(context);
+            if (leftType.equals(rightType)) {
+                return leftType;
+            }
+            if ((leftType instanceof IntegerType && rightType instanceof DoubleType)
+                    || (rightType instanceof IntegerType && leftType instanceof DoubleType))  {
+                return Type.DOUBLE;
+            }
+            return type();
+
+        }
+
         public Type type() {
             final Type rightType = right.type();
             final Type leftType = left.type();
@@ -90,9 +111,14 @@ public interface Expr extends Ast {
         public void visit(AstVisitor astVisitor) { astVisitor.visit(this); }
     }
 
-    record Ref(Atom ref, Type type) implements Expr {
-        public Ref(Atom ref) {
+    record VarRef(Atom ref, Type type) implements Expr {
+        public VarRef(Atom ref) {
             this(ref, Type.UNKNOWN);
+        }
+
+        @Override
+        public Type findType(Map<Atom, Type> context) {
+            return context.getOrDefault(ref, type);
         }
 
         @Override

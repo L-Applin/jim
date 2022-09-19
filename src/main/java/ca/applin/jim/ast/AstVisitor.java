@@ -41,7 +41,7 @@ public interface AstVisitor {
     void visit(Unop unop);
     void visit(Binop binop);
     void visit(PExpr pExpr);
-    void visit(Ref ref);
+    void visit(VarRef varRef);
     void visit(DeRef deRef);
     void visit(FunctionCall functionCall);
     void visit(ReturnExpr returnExpr);

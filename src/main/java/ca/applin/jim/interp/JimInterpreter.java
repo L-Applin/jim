@@ -14,7 +14,7 @@ import ca.applin.jim.ast.Expr.DoubleLitteral;
 import ca.applin.jim.ast.Expr.FunctionCall;
 import ca.applin.jim.ast.Expr.IntegerLitteral;
 import ca.applin.jim.ast.Expr.PExpr;
-import ca.applin.jim.ast.Expr.Ref;
+import ca.applin.jim.ast.Expr.VarRef;
 import ca.applin.jim.ast.Expr.ReturnExpr;
 import ca.applin.jim.ast.Expr.StringLitteral;
 import ca.applin.jim.ast.Expr.Unop;
@@ -133,8 +133,8 @@ public class JimInterpreter {
         }
 
         @Override
-        public void visit(Ref ref) {
-            System.out.println("visit REF: " + ref.toString());
+        public void visit(VarRef varRef) {
+            System.out.println("visit REF: " + varRef.toString());
         }
 
         @Override

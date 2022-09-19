@@ -12,7 +12,7 @@ import ca.applin.jim.ast.Expr.DoubleLitteral;
 import ca.applin.jim.ast.Expr.FunctionCall;
 import ca.applin.jim.ast.Expr.IntegerLitteral;
 import ca.applin.jim.ast.Expr.PExpr;
-import ca.applin.jim.ast.Expr.Ref;
+import ca.applin.jim.ast.Expr.VarRef;
 import ca.applin.jim.ast.Expr.ReturnExpr;
 import ca.applin.jim.ast.Expr.StringLitteral;
 import ca.applin.jim.ast.Expr.Unop;
@@ -90,7 +90,7 @@ public abstract class TypeVisitor implements AstVisitor {
     }
 
     @Override
-    public void visit(Ref ref) {
+    public void visit(VarRef varRef) {
 
     }
 

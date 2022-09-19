@@ -8,7 +8,7 @@ import ca.applin.jim.ast.Expr.DoubleLitteral;
 import ca.applin.jim.ast.Expr.FunctionCall;
 import ca.applin.jim.ast.Expr.IntegerLitteral;
 import ca.applin.jim.ast.Expr.PExpr;
-import ca.applin.jim.ast.Expr.Ref;
+import ca.applin.jim.ast.Expr.VarRef;
 import ca.applin.jim.ast.Expr.StringLitteral;
 import ca.applin.jim.ast.Operator;
 import ca.applin.jim.ast.Type;
@@ -82,8 +82,8 @@ public class TestUtils {
         return new FunctionCall(TEST_LOCATION, new Atom(name), Arrays.asList(args));
     }
 
-    static Ref var(String name) {
-        return new Ref(new Atom(name));
+    static VarRef var(String name) {
+        return new VarRef(new Atom(name));
     }
 
     static ArrayLitteral array(Type type, List<Expr> elems) {
